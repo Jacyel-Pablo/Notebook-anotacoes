@@ -1,0 +1,4 @@
+Olá querido desenvolvedo ou o meu eu do futuro
+as tabelas que foram criadas estão nos apps de "cadastro" e "anotacao"
+
+as configurações padrões do Django estão no app "server"

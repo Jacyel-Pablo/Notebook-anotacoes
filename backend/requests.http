@@ -1,0 +1,53 @@
+POST http://localhost:8000/cadastro/criar_conta/
+Content-Type: application/json
+
+{
+    "email": "teste@gmail.com",
+    "senha": "12345",
+    "confirma": "12345"
+}
+
+### login
+POST http://localhost:8000/login/login/
+Content-Type: application/json
+
+{
+    "email": "teste@gmail.com",
+    "senha": "12345"
+}
+
+### Csrf_token
+GET http://localhost:8000/tokens/csrf_token/
+
+### jwt
+GET http://localhost:8000/tokens/jwt/
+
+### Validação
+GET http://localhost:8000/tokens/validar_jwt/?email=&token=
+
+### Enviar anotações
+POST http://localhost:8000/anotacao/enviar_anotacao/
+Content-Type: application/json
+
+{
+    "email": "",
+    "jwt": "",
+    "anotacao": "testando 1234"
+}
+
+### Pegar anotações
+
+GET http://localhost:8000/anotacao/pegar_anotacao/?email=
+
+### Apagar anotação
+DELETE http://localhost:8000/anotacao/apagar_anotacao/
+Content-Type: application/json
+
+{
+    "jwt": "",
+    "id_anotacao": "",
+    "email": ""
+}
+
+### ativar usuário
+GET http://localhost:8000/ativar/ativar_usuario/?email=
