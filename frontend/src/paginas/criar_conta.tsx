@@ -37,7 +37,8 @@ export default function Criar_conta(props: any)
                         alert(res["erro"])
 
                     } else {
-                        alert("Usuário criado com sucesso\nenviamos um email para ativar seu usuário\nverifique seu email se não estive aparecendo vai na sua caixa de spam")
+                        alert("Usuário criado com sucesso")
+                        // alert("Usuário criado com sucesso\nenviamos um email para ativar seu usuário\nverifique seu email se não estive aparecendo vai na sua caixa de spam")
 
                         location.href = "/"
                     }

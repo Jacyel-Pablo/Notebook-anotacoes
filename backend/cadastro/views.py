@@ -11,17 +11,17 @@ import json
 
 load_dotenv()
 
-def enviar_email(email):
-    resend.api_key = os.environ["RESEND_API_KEY"]
+# def enviar_email(email):
+#     resend.api_key = os.environ["RESEND_API_KEY"]
 
-    params = {
-        "from": "notebook-anotacao@resend.dev",
-        "to": [email],
-        "subject": "Ative o seu usuário clique aqui",
-        "html": f'<h1>Ative o seu usuário <a href="https://notebook-anotacao.vercel.app/Ativar_usuario?email={email}">clique aqui</a></h1>',
-    }
+#     params = {
+#         "from": "notebook-anotacao@resend.dev",
+#         "to": [email],
+#         "subject": "Ative o seu usuário clique aqui",
+#         "html": f'<h1>Ative o seu usuário <a href="https://notebook-anotacao.vercel.app/Ativar_usuario?email={email}">clique aqui</a></h1>',
+#     }
 
-    resend.Emails.send(params)
+#     resend.Emails.send(params)
 
 # Create your views here.
 
@@ -53,9 +53,9 @@ def criar_conta(request):
                     # Criptografando a senha
                     senha = make_password(senha, os.getenv("SALTOS"))
 
-                    notebook_usuario(email=email, senha=senha).save()
+                    notebook_usuario.objects.create(email=email, senha=senha, ativo=True)
 
-                    enviar_email(dados['email'])
+                    # enviar_email(dados['email'])
 
                     return JsonResponse({"valor": email})
             
