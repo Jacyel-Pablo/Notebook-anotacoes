@@ -9,8 +9,8 @@ import Ativar_usuario from './paginas/ativar_usuario.tsx'
 import { useState } from 'react'
 import type { JSX } from 'react/jsx-dev-runtime'
 
-// const backend = "https://notebook-anotacoes.onrender.com"
-const backend = "http://127.0.0.1:8000"
+const backend = "https://notebook-anotacoes.onrender.com"
+// const backend = "http://127.0.0.1:8000"
 // const backend = "http://localhost:8000"
 
 interface Protecao_list {
