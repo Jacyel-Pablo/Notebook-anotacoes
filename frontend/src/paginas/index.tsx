@@ -78,7 +78,7 @@ export default function Index(props:any)
 
                 <p className="mt-5 ml-44">Não tem uma conta ? <a className="text-blue-500" href="/criar_conta">Crie uma</a></p>
             
-                <input onClick={() => enviar_dados()} className="text-white bg-orange-800 rounded-4xl border-2 border-black h-12 w-32 mt-5 ml-[50%]" type="button" value="Entrar" />
+                <input onClick={() => enviar_dados()} className="text-white bg-orange-800 rounded-4xl border-2 border-black h-12 w-32 mt-5 ml-[50%] hover:bg-amber-950 active:bg-amber-950" type="button" value="Entrar" />
             </form>
         </div>
     )

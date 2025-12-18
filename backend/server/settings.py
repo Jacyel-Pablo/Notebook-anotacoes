@@ -136,15 +136,15 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_ALLOWED_ORIGINS = [
-    "https://notebook-anotacoes.vercel.app",
-    # "http://localhost:5173",
+    # "https://notebook-anotacoes.vercel.app",
+    "http://localhost:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://notebook-anotacoes.vercel.app",
-    # "http://localhost:5173",
+    # "https://notebook-anotacoes.vercel.app",
+    "http://localhost:5173",
 ]
 
 CSRF_COOKIE_SECURE = True

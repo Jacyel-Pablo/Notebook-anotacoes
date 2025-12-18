@@ -211,8 +211,8 @@ export default function Home(props: any)
                         {/* <button className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200">
                             <p>Remover <br /> fundo</p>
                         </button> */}
-                        <input onClick={e => abre_fechar(e)} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200" id="aberto" type="button" value="Cancelar" />
-                        <input onClick={e => {deletar_anotacao(); abre_fechar(e)}} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600" id="aberto" type="button" value="Excluir" />
+                        <input onClick={e => abre_fechar(e)} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
+                        <input onClick={e => {deletar_anotacao(); abre_fechar(e)}} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
                     </div>
                 </div>
             </div>
@@ -221,12 +221,12 @@ export default function Home(props: any)
                 <div className="h-10 mt-5 flex z-10">
                     <input onChange={e => pega_dados(e)} className="h-20 w-[75%] ml-4 border-b-2 p-2 lg:text-4xl text-[140%] outline-none" id="anotacao" value={dados.anotacao} placeholder="Insira uma anotação" type="text" />
 
-                    <input onClick={() => enviar_anotacao()} className="h-16 w-40 mt-2 ml-2 border-2 rounded-4xl text-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Enviar" />
+                    <input onClick={() => enviar_anotacao()} className="h-16 w-40 mt-2 ml-2 border-2 rounded-4xl text-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Enviar" />
                 </div>
 
                 {/* Botões sair da versão mobile */}
                 <div className="h-10 w-[100%] xl:mt-0 mt-12 flex items-center justify-end align-middle">
-                    <input onClick={() => sair_usuario()} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Sair" />
+                    <input onClick={() => sair_usuario()} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Sair" />
 
                 </div>
 
@@ -239,7 +239,7 @@ export default function Home(props: any)
                                 <div className="h-16 flex items-center justify-end">
                                     {/* Pegando a data e colocando ela em dia mes e ano */}
                                     <p className="text-2xl mr-7">{value["data"].split("-")[2] + "/" + value["data"].split("-")[1] + "/" + value["data"].split("-")[0]}</p>
-                                    <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e)}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700" id="fechado" type="button" value="X" />
+                                    <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e)}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
                                 </div>
                                 <div className="h-[80%] w-[90%] ml-8 overflow-x-hidden">
                                     <p className="text-4xl">{value["anotacao"]}</p>
