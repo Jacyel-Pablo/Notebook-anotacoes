@@ -38,7 +38,6 @@ export default function Home(props: any)
     function sair_usuario():void
     {
         cookieStore.delete("csrftoken")
-        cookieStore.delete("email")
         cookieStore.delete("jwt")
         location.href = "/"
     }
@@ -46,7 +45,6 @@ export default function Home(props: any)
     async function enviar_anotacao()
     {
         const csrf_token = await cookieStore.get("csrftoken")
-        const email = await cookieStore.get("email")
         const token_jwt = await cookieStore.get("jwt")
 
         if (dados.anotacao.length >= 10) {
@@ -56,11 +54,10 @@ export default function Home(props: any)
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
                 },
                 body: JSON.stringify({
-                    email: email?.value,
                     anotacao: dados.anotacao,
-                    jwt: token_jwt?.value
                 })
 
             }).then(res => res.json()).then(res => {
@@ -117,7 +114,6 @@ export default function Home(props: any)
     async function deletar_anotacao()
     {
         const csrf_token = await cookieStore.get("csrftoken")
-        const email = await cookieStore.get("email")
         const token_jwt = await cookieStore.get("jwt")
 
         await fetch(`${backend}/anotacao/apagar_anotacao/`, {
@@ -125,11 +121,10 @@ export default function Home(props: any)
             credentials: "include",
             headers: {
                 "X-CSRFToken": csrf_token?.value ?? "",
+                "Authorization": `Bearer ${token_jwt?.value}`
             },
             body: JSON.stringify({
-                jwt: token_jwt?.value,
                 id_anotacao: dados.id_anotacao_apagar,
-                email: email?.value
             })
 
         }).then(res => res.json()).then(res => {
@@ -163,13 +158,13 @@ export default function Home(props: any)
         async function main()
         {
             const csrf_token = await cookieStore.get("csrftoken")
-            const email = await cookieStore.get("email")
             const token_jwt = await cookieStore.get("jwt")
 
-            await fetch(`${backend}/anotacao/pegar_anotacao/?email=${email?.value}&jwt=${token_jwt?.value}`, {
+            await fetch(`${backend}/anotacao/pegar_anotacao/`, {
                 credentials: "include",
                 headers: {
                     "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
                 }
 
             }).then(res => res.json()).then(async res => {

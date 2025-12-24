@@ -16,19 +16,16 @@ f = Fernet(os.getenv("ANOTACAOES_KEY"))
 
 # Create your views here.
 
-@csrf_protect
 def enviar_anotacao(request):
     try:
         dados = json.loads(request.body)
-        email = dados['email']
-        usuario = notebook_usuario.objects.get(email=email)
-        print(usuario)
+        token_jwt = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
+        jwt = decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
 
-        if usuario.ativo == True:
-            try:
-                token_jwt = dados["jwt"]
-                decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
+        try:
+            usuario = notebook_usuario.objects.get(id=jwt["id"])
 
+            if usuario.ativo == True:
                 try:
                     if request.method == "POST":
                         anotacao = f.encrypt(dados["anotacao"].encode("utf-8"))
@@ -61,32 +58,31 @@ def enviar_anotacao(request):
                     print(e)
                     return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado ao tentar enviar a anotação"})
 
-            except InvalidIssuerError as e:
-                print(e)
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
-
-        else:
+            else:
+                return JsonResponse({"valor": "", "erro": "usuário inválido"})
+            
+        except Exception as e:
+            print(e)
             return JsonResponse({"valor": "", "erro": "usuário inválido"})
 
-    except Exception as e:
+    except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "usuário inválido"})
+        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
 
-@csrf_protect
 def pegar_anotacao(request):
     try:
-        email = request.GET["email"]
-        usuario = notebook_usuario.objects.get(email=email)
+        token_jwt = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
+        jwt = decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
 
-        if usuario.ativo == True:
+        try:
+            dados_anotacao = []
+
+            db_dados = notebook_anotacoes.objects.filter(usuario__id=jwt["id"])
+
             try:
-                token_jwt = request.GET["jwt"]
-                decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
+                usuario = notebook_usuario.objects.get(id=jwt["id"])
 
-                try:
-                    dados_anotacao = []
-
-                    db_dados = notebook_anotacoes.objects.filter(usuario__email=email)
+                if usuario.ativo == True:
                     for i in db_dados:
                         # Vamos descriptografa a mensagem            
                         descript = f.decrypt(i.anotacao).decode("utf-8")
@@ -98,34 +94,31 @@ def pegar_anotacao(request):
 
                     return JsonResponse({"valor": True, "dados": dados_anotacao})
                 
-                except Exception as e:
-                    print(e)
-                    return JsonResponse({"valor": "", "erro": "Ocorreu um erro a tentar pegar as anotações"})
-
-            except InvalidIssuerError as e:
+                else:
+                    return JsonResponse({"valor": "", "erro": "usuário inválido"})
+                
+            except Exception as e:
                 print(e)
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+                return JsonResponse({"valor": "", "erro": "usuário inválido"})
         
-        else:
-            return JsonResponse({"valor": "", "erro": "usuário inválido"})
+        except Exception as e:
+            print(e)
+            return JsonResponse({"valor": "", "erro": "Ocorreu um erro a tentar pegar as anotações"})
 
-    except Exception as e:
+    except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "usuário inválido"})
+        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
 
-@csrf_protect
 def apagar_anotacao(request):
     try:
         dados = json.loads(request.body)
-        email = dados['email']
-        usuario = notebook_usuario.objects.get(email=email)
+        token_jwt = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
+        jwt = decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
 
-        if usuario.ativo == True:
+        try:
+            usuario = notebook_usuario.objects.get(id=jwt["id"])
 
-            try:
-                token_jwt = dados["jwt"]
-                decode(token_jwt, os.getenv("JWT_KEY"), algorithms=["HS256"])
-
+            if usuario.ativo == True:
                 try:
                     if request.method == "DELETE":
                         id = dados["id_anotacao"]
@@ -139,13 +132,13 @@ def apagar_anotacao(request):
                     print(e)
                     return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado"})
 
-            except InvalidIssuerError as e:
-                print(e)
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
-        
-        else:
+            else:
+                return JsonResponse({"valor": "", "erro": "usuário inválido"})
+
+        except Exception as e:
+            print(e)
             return JsonResponse({"valor": "", "erro": "usuário inválido"})
 
-    except Exception as e:
+    except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "usuário inválido"})
+        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})

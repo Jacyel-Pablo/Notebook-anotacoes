@@ -33,7 +33,10 @@ export default function Index(props:any)
                 fetch(`${backend}/tokens/csrf_token/`, {credentials: "include"}).then(res1 => res1.json()).then(res1 => {
                     if (res1["valor"].length != 0) {
 
-                        fetch(`${backend}/tokens/jwt/`, {
+                        // Pegando o id do usuario para colocar no jwt
+                        const id = res["valor"]
+
+                        fetch(`${backend}/tokens/jwt/?id=${id}`, {
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRFToken": csrf_token ?? "",
@@ -44,7 +47,6 @@ export default function Index(props:any)
                             if (jwt["valor"].length > 0) {
                                 await cookieStore.set("csrftoken", res1["valor"])
                                 await cookieStore.set("jwt", jwt["valor"])
-                                await cookieStore.set("email", res["valor"])
                                 location.href = "/home"
 
                             } else {

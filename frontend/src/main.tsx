@@ -27,10 +27,14 @@ function Protecao()
 
   async function teste() {
     const jwt = await cookieStore.get("jwt")
-    const email = await cookieStore.get("email")
     
     if (jwt?.value != undefined) {
-      fetch(`${backend}/tokens/validar_jwt/?email=${email?.value}&token=${jwt?.value}`).then(res => res.json()).then(res => {
+      fetch(`${backend}/tokens/validar_jwt/`, {
+        headers: {
+          "Authorization": `Bearer ${jwt?.value}`
+        }
+
+      }).then(res => res.json()).then(res => {
 
         switch (res) {
           case true:

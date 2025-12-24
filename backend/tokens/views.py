@@ -24,7 +24,8 @@ def csrf_token(request):
     
 def jwt(request):
     try:
-        expiracao = {"exp": datetime.datetime.now(timezone.utc) + timedelta(hours=1)}
+        id = request.GET['id']
+        expiracao = {"exp": datetime.datetime.now(timezone.utc) + timedelta(hours=1), "id": id}
 
         token = encode(expiracao, os.getenv("JWT_KEY"))
 
@@ -37,26 +38,30 @@ def jwt(request):
 @csrf_exempt
 def validar_jwt(request):
     try:
-        email = request.GET['email']
-        usuario = notebook_usuario.objects.get(email=email)
+        token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
 
-        if usuario.ativo == True:
+        try:
+            jwt = decode(token, os.getenv("JWT_KEY"), algorithms=["HS256"])
+
             try:
-                token = request.GET["token"]
+                usuario = notebook_usuario.objects.get(id=jwt["id"])
 
-                try:
-                    decode(token, os.getenv("JWT_KEY"), algorithms=["HS256"])
+                if usuario.ativo == True:
                     return JsonResponse(True, safe=False)
-
-                except ExpiredSignatureError:
-                    return JsonResponse(False, safe=False)
-
+                            
+                else:
+                    return JsonResponse({"valor": "", "erro": "usuário inválido"})
+                
             except Exception as e:
                 print(e)
-                return JsonResponse(False, safe=False)
-            
-        else:
-            return JsonResponse({"valor": "", "erro": "usuário inválido"})
+                return JsonResponse({"valor": "", "erro": "usuário inválido"})
+
+        except ExpiredSignatureError:
+            return JsonResponse(False, safe=False)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse(False, safe=False)
 
     except Exception as e:
         print(e)

@@ -28,8 +28,10 @@ def login(request):
                     try:
                         banco = notebook_usuario.objects.get(email=email)
 
+                        id = banco.id
+
                         if (check_password(senha, banco.senha)):
-                            return JsonResponse({"valor": email})
+                            return JsonResponse({"valor": id})
                         
                         else:
                             return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
