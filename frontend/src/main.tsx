@@ -5,13 +5,11 @@ import './index.css'
 import Index from './paginas/index.tsx'
 import Criar_conta from './paginas/criar_conta.tsx'
 import Home from './paginas/home.tsx'
-import Ativar_usuario from './paginas/ativar_usuario.tsx'
 import { useState } from 'react'
 import type { JSX } from 'react/jsx-dev-runtime'
 
 const backend = "https://notebook-anotacoes.onrender.com"
 // const backend = "http://127.0.0.1:8000"
-// const backend = "http://localhost:8000"
 
 interface Protecao_list {
   [key: string]: JSX.Element
@@ -79,10 +77,6 @@ const rotas = createBrowserRouter([
     path: "/home",
     element: <Protecao/>
   },
-  {
-    path: "/Ativar_usuario",
-    element: <Ativar_usuario backend={backend} />
-  }
 ])
 
 createRoot(document.getElementById('root')!).render(

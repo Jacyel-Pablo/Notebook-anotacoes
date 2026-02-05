@@ -5,7 +5,7 @@ export default function Criar_conta(props: any)
     const backend = props.backend
 
     const [ dados, setDados ] = useState({
-        email: "",
+        nome: "",
         senha: "",
         confirma: ""
     })
@@ -20,7 +20,7 @@ export default function Criar_conta(props: any)
 
     async function enviar_dados()
     {
-        if (dados.email.length < 5 || dados.senha.length < 5) {
+        if (dados.nome.length < 5 || dados.senha.length < 5) {
             alert("Email e senha precisam ter no minimo 5 caracteres")
 
         } else {
@@ -54,8 +54,8 @@ export default function Criar_conta(props: any)
         <div className="h-[100dvh] w-[100dvw] flex items-center justify-center bg-amber-100">
             <form className="h-[38%] xl:w-[40%] lg:w-100% w-[100%] bg-[url(./assets/login.jpg)] bg-cover bg-no-repeat overflow-hidden">
                 <div className="w-[100%] grid grid-cols-3 text-end overflow-hidden lg:mt-7 mt-3 md:mt-32">
-                    <p className="mr-5 text-3xl">Email:</p>
-                    <input onChange={e => pegar_dados(e)} className="bg-gray-200 h-8 w-60 ml-0 mt-1 border-2 rounded-2xl p-3" id="email" type="email" placeholder="Insira seu email:" />
+                    <p className="mr-5 text-3xl">Nome:</p>
+                    <input onChange={e => pegar_dados(e)} className="bg-gray-200 h-8 w-60 ml-0 mt-1 border-2 rounded-2xl p-3" id="nome" type="text" placeholder="Insira seu nome:" />
                 </div>
 
                 <div className="w-[100%] grid grid-cols-3 text-end overflow-hidden mt-3">
@@ -68,7 +68,7 @@ export default function Criar_conta(props: any)
                     <input onChange={e => pegar_dados(e)} className="bg-gray-200 h-8 w-60 ml-0 mt-1 border-2 rounded-2xl p-3" id="confirma" type="password" placeholder="Insira sua senha novamente:" />
                 </div>
             
-                <input onClick={() => enviar_dados()} className="text-white bg-orange-800 rounded-4xl border-2 border-black h-12 w-32 mt-5 ml-[50%]" type="button" value="Criar" />
+                <input onClick={() => enviar_dados()} className="text-white bg-orange-800 rounded-4xl border-2 border-black h-12 w-32 mt-5 ml-[50%] hover:bg-amber-950 active:bg-amber-950" type="button" value="Criar" />
             </form>
         </div>
     )

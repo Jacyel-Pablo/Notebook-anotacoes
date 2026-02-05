@@ -27,6 +27,18 @@ export default function Home(props: any)
         csrftoken: null
     })
 
+    interface AbreFecharJanela{
+        mensagem_1: string,
+        mensagem_2: string,
+        apagar_o_que: string
+    }
+
+    const [ abreFecharJanela, setAbreFecharJanela ] = useState<AbreFecharJanela>({
+        mensagem_1: "",
+        mensagem_2: "",
+        apagar_o_que: "",
+    })
+
     function pega_dados(e: any):void
     {
         setDados({
@@ -93,9 +105,26 @@ export default function Home(props: any)
     const elemento_abre_fechar: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
     // Essa função abre e fechar a janela que pergunta se realmente vc que apagar a mensagem
-    function abre_fechar(e: any): void
-    {        
+    function abre_fechar(e: any, apagar_o_que: string): void
+    {
         if (e.target.id === "fechado") {
+            if (apagar_o_que === "mensagem") {
+                setAbreFecharJanela({
+                    ...abreFecharJanela,
+                    mensagem_1: "Você realmente que apagar essa mensagem ? ",
+                    mensagem_2: " essa ação não podera se desfeita",
+                    apagar_o_que: apagar_o_que
+                })
+
+            } else {
+                setAbreFecharJanela({
+                    ...abreFecharJanela,
+                    mensagem_1: "Você realmente que apagar o usuário atual ? ",
+                    mensagem_2: " essa ação não podera se desfeita",
+                    apagar_o_que: apagar_o_que
+                })
+            }
+
             // Pegar elemento para remover-lo na função deletar_anotacao
             anotacao_element.current = e.target.parentElement?.parentElement
 
@@ -116,42 +145,66 @@ export default function Home(props: any)
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
-        await fetch(`${backend}/anotacao/apagar_anotacao/`, {
-            method: "DELETE",
-            credentials: "include",
-            headers: {
-                "X-CSRFToken": csrf_token?.value ?? "",
-                "Authorization": `Bearer ${token_jwt?.value}`
-            },
-            body: JSON.stringify({
-                id_anotacao: dados.id_anotacao_apagar,
+        if (abreFecharJanela.apagar_o_que === "mensagem") {
+            await fetch(`${backend}/anotacao/apagar_anotacao/`, {
+                method: "DELETE",
+                credentials: "include",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                body: JSON.stringify({
+                    id_anotacao: dados.id_anotacao_apagar,
+                })
+
+            }).then(res => res.json()).then(res => {
+                if (res["valor"] === true) {
+                    alert("Mensagem apagadar com sucesso!")
+
+                    anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0"
+                    anotacao_element.current = null
+
+                    setDados({
+                        ...dados,
+                        id_anotacao_apagar: ""
+                    })
+
+                } else {
+                    alert(res["erro"])
+
+                    if (res["erro"] === "usuário inválido") {
+                        sair_usuario()
+                    }
+
+                    setDados({
+                        ...dados,
+                        id_anotacao_apagar: ""
+                    })
+                }
             })
 
-        }).then(res => res.json()).then(res => {
-            if (res["valor"] === true) {
-                alert("Mensagem apagadar com sucesso!")
+        } else {
+            await fetch(`${backend}/cadastro/apagar_usuario/`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },   
+                credentials: "include",
 
-                anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0"
-                anotacao_element.current = null
+            }).then(res => res.json()).then(async res => {
+                console.log(res)
+                if (res["erro"].length === 0) {
+                    alert("Usuário apagado com sucesso")
+                    await cookieStore.delete("jwt")
+                    await cookieStore.delete("csrftoken")
+                    location.href = "/"
 
-                setDados({
-                    ...dados,
-                    id_anotacao_apagar: ""
-                })
-
-            } else {
-                alert(res["erro"])
-
-                if (res["erro"] === "usuário inválido") {
-                    sair_usuario()
+                } else {
+                    alert(res["erro"])
                 }
-
-                setDados({
-                    ...dados,
-                    id_anotacao_apagar: ""
-                })
-            }
-        })
+            })
+        }
     }
 
     useEffect(() => {
@@ -198,16 +251,16 @@ export default function Home(props: any)
             <div ref={elemento_abre_fechar} className="h-[0dvh] w-[0dvw] fixed">
                 <div className="h-[60%] w-[100%] rounded-3xl xl:w-[35%] mt-[20dvh] xl:ml-[32.5%] bg-white">
                     <div className="h-[80%] overflow-hidden">
-                        <p className="mt-10 text-3xl pl-5">Você realmente que apagar essa mensagem ? <br />
-                         essa ação não podera se desfeita</p>
+                        <p className="mt-10 text-3xl pl-5">{abreFecharJanela.mensagem_1}<br />
+                        {abreFecharJanela.mensagem_2}</p>
                     </div>
                     <div className="h-[20%] border-t-2 flex items-center justify-end">
                         {/* Em desenvolvimento */}
                         {/* <button className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200">
                             <p>Remover <br /> fundo</p>
                         </button> */}
-                        <input onClick={e => abre_fechar(e)} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
-                        <input onClick={e => {deletar_anotacao(); abre_fechar(e)}} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
+                        <input onClick={e => abre_fechar(e, "")} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
+                        <input onClick={e => {deletar_anotacao(); abre_fechar(e, "")}} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
                     </div>
                 </div>
             </div>
@@ -221,6 +274,8 @@ export default function Home(props: any)
 
                 {/* Botões sair da versão mobile */}
                 <div className="h-10 w-[100%] xl:mt-0 mt-12 flex items-center justify-end align-middle">
+                    <input onClick={e => abre_fechar(e, "apagar_usuário")} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" id="fechado" type="button" value="Apagar conta" />
+                    
                     <input onClick={() => sair_usuario()} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Sair" />
 
                 </div>
@@ -234,7 +289,7 @@ export default function Home(props: any)
                                 <div className="h-16 flex items-center justify-end">
                                     {/* Pegando a data e colocando ela em dia mes e ano */}
                                     <p className="text-2xl mr-7">{value["data"].split("-")[2] + "/" + value["data"].split("-")[1] + "/" + value["data"].split("-")[0]}</p>
-                                    <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e)}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
+                                    <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e, "mensagem")}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
                                 </div>
                                 <div className="h-[80%] w-[90%] ml-8 overflow-x-hidden">
                                     <p className="text-4xl">{value["anotacao"]}</p>
@@ -245,10 +300,10 @@ export default function Home(props: any)
                 </div>
             </form>
 
-            {/* Botões mudar fundo e sair da versão desktop */}
+            {/* Botões mudar apagar conta e sair da versão desktop */}
             <div className="h-20 xl:w-[30%] w-0 flex items-center justify-end align-middle">
                 {/* Em desenvolvimento */}
-                {/* <input className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Mudar fundo" /> */}
+                <input onClick={e => abre_fechar(e, "apagar_usuário")} className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" id="fechado" type="button" value="Apagar conta" />
 
                 <input onClick={() => sair_usuario()} className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Sair" />
 

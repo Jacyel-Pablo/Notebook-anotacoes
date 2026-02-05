@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'login',
     'tokens',
     'anotacao',
-    'ativar_usuario',
     'corsheaders'
 ]
 

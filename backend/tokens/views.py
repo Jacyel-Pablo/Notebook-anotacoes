@@ -43,18 +43,7 @@ def validar_jwt(request):
         try:
             jwt = decode(token, os.getenv("JWT_KEY"), algorithms=["HS256"])
 
-            try:
-                usuario = notebook_usuario.objects.get(id=jwt["id"])
-
-                if usuario.ativo == True:
-                    return JsonResponse(True, safe=False)
-                            
-                else:
-                    return JsonResponse({"valor": "", "erro": "usuário inválido"})
-                
-            except Exception as e:
-                print(e)
-                return JsonResponse({"valor": "", "erro": "usuário inválido"})
+            return JsonResponse(True, safe=False)
 
         except ExpiredSignatureError:
             return JsonResponse(False, safe=False)

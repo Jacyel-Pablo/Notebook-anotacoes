@@ -16,8 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import criar_conta
+from .views import criar_conta, apagar_usuario
 
 urlpatterns = [
     path('criar_conta/', criar_conta),
+    path('apagar_usuario/', apagar_usuario)
 ]

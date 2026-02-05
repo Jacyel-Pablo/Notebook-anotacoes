@@ -6,7 +6,6 @@ from cadastro.models import notebook_usuario
 from dotenv import load_dotenv
 import hashlib
 import json
-import os
 
 load_dotenv()
 
@@ -17,31 +16,19 @@ def login(request):
     try:
         if (request.method == "POST"):
             dados = json.loads(request.body)
-            email = hashlib.sha256(dados['email'].encode("utf-8")).hexdigest()
+            nome = hashlib.sha256(dados['nome'].encode("utf-8")).hexdigest()
             senha = dados['senha']
 
+            # Se existir um usuário ele vai fazer a verificação do email e a senha se não vai da erro
             try:
-                usuario = notebook_usuario.objects.get(email=email)
+                banco = notebook_usuario.objects.get(nome=nome)
 
-                if usuario.ativo == True:
-                    # Se existir um usuário ele vai fazer a verificação do email e a senha se não vai da erro
-                    try:
-                        banco = notebook_usuario.objects.get(email=email)
+                id = banco.id
 
-                        id = banco.id
-
-                        if (check_password(senha, banco.senha)):
-                            return JsonResponse({"valor": id})
-                        
-                        else:
-                            return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
-
-                    except Exception as e:
-                        print(e)
-                        return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
+                if (check_password(senha, banco.senha)):
+                    return JsonResponse({"valor": id})
                 
                 else:
-                    print(e)
                     return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
 
             except Exception as e:
