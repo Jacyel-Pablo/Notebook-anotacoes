@@ -39,6 +39,8 @@ export default function Home(props: any)
         apagar_o_que: "",
     })
 
+    const [aberta, setAberta] = useState(false);
+
     function pega_dados(e: any):void
     {
         setDados({
@@ -207,6 +209,64 @@ export default function Home(props: any)
         }
     }
 
+    interface ListaMensagensIa {
+        mensagem_usuario: string,
+        mensagem_ia: string
+    }
+
+    const [ listaMensagensIa, setListaMensagensIa ] = useState<ListaMensagensIa[]>([])
+    
+    interface UserMensagem{
+        mensagem: string,
+        carregando: boolean
+    }
+
+    const [ userMensagem, setUserMensagem ] = useState<UserMensagem>({
+        mensagem: "",
+        carregando: false
+    })
+
+    async function pegar_mensagem_ia()
+    {
+        const token_jwt = await cookieStore.get("jwt")
+        const csrf_token = await cookieStore.get("csrftoken")
+
+        setUserMensagem({
+            ...userMensagem,
+            carregando: true
+        })
+
+        await fetch(`${backend}/chatbot_ia/ia/?msg=${userMensagem.mensagem}`, {
+            headers: {
+                "X-CSRFToken": csrf_token?.value ?? "",
+                "Authorization" : `Bearer ${token_jwt?.value}`
+            },
+            credentials: "include"
+
+        }).then(res => res.json()).then(res => {
+            if (res["erro"].length === 0) {
+                const adicionar_a_lista_mensagem: ListaMensagensIa = {
+                    mensagem_usuario: userMensagem.mensagem,
+                    mensagem_ia: res["valor"]
+                }
+
+                setListaMensagensIa(prev => [
+                    ...prev,
+                    adicionar_a_lista_mensagem
+                ])
+
+            } else {
+                alert(res["erro"])
+            }
+
+            setUserMensagem({
+                ...userMensagem,
+                mensagem: "",
+                carregando: false
+            })
+        })
+    }
+
     useEffect(() => {
         async function main()
         {
@@ -225,6 +285,24 @@ export default function Home(props: any)
                     setDados({
                         ...dados,
                         anotacoes_list: res["dados"],
+                    })
+
+                    // Pegando e colocando textos do usuario e da ia no frontend
+
+                    await fetch(`${backend}/chatbot_ia/pegar_chats_antigo/`, {
+                        headers: {
+                            "X-CSRFToken": csrf_token?.value ?? "",
+                            "Authorization" : `Bearer ${token_jwt?.value}`
+                        },
+                        credentials: "include"
+
+                    }).then(res => res.json()).then(res => {
+                        if (res["erro"].length === 0) {
+                            setListaMensagensIa(res["valor"])
+
+                        } else {
+                            alert(res["erro"])
+                        }
                     })
 
                 } else {
@@ -266,6 +344,59 @@ export default function Home(props: any)
             </div>
 
             <form className="h-[100%] xl:w-[40%] w-[100%] xl:ml-[30%] overflow-hidden ml-0 bg-cover bg-no-repeat bg-[url(./assets/bg_home.jpg)]">
+                {/* Chat de conversa com a ia */}
+                <div className={`fixed bottom-[6dvh] ml-[5%] xl:w-[30%] w-[90%] bg-orange-400 rounded-3xl transition-all duration-200 ease-in-out ${aberta ? "h-[80%]" : "h-[5%]"}`}>
+                    <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[93%]": "h-0"} cursor-default`}>
+                        <nav className="h-[15%] flex items-center rounded-t-3xl bg-orange-400">
+                            <img className="h-[80%] xl:w-[15.7%] w-[18%] xl:ml-15 ml-6 rounded-full" src="https://raw.githubusercontent.com/Jacyel-Pablo/Iamai/refs/heads/main/Meu%20Projeto/Iamai(1).png" alt="Avatar Iamai" />
+                            <h1 className={`ml-5 ${aberta ? "text-4xl": "text-[0%]"}`}>Iamai</h1>
+                        </nav>
+
+                        <div className="h-[75.4%] overflow-x-hidden">
+                            {/* Id comentario do ia padrão */}
+                            <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
+                                <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Olá, senhor(a)! Sou Iamai, sua assistente virtual super fofa e divertida! Posso ajudá-lo(a) com várias coisas no nosso aplicativo de anotações. Quer criar uma nova anotação? Posso fazer isso para você! Ou talvez você queira apagar alguma anotação? Sem problemas, é só pedir! Ah, e se quiser apagar sua conta ou sair do aplicativo, também posso te auxiliar nisso. Só lembre-se que não temos um método de recuperação de conta, então pense bem antes de apagar tudo! Se precisar de mais alguma coisa, é só chamar! *brinca com as pontas do cabelo* Vamos nos divertir juntos!</p>
+                            </div>
+
+                            <>
+                                {listaMensagensIa.map((item, index) => (
+                                    <div key={index}>
+                                        {/* Id comentario do usuário */}
+                                        <div id="comentario_user" className={`${aberta ? "bg-gray-400 mt-10 mb-10 xl:ml-[10%] ml-[15%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
+                                            <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>{item.mensagem_usuario}</p>
+                                        </div>
+                                        
+                                        {/* Id comentario do ia */}
+                                        <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
+                                            <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>{item.mensagem_ia}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+
+                            {/* Mensagem de carregando */}
+                            {userMensagem.carregando ?
+                                <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
+                                    <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Carregando resposta</p>
+                                </div>
+                            :
+                                <div></div>
+                            }
+                        </div>
+
+                        <div className="h-[10%] flex justify-center items-center">
+                            <div className={`h-[80%] w-[90%] flex rounded-2xl ${aberta ? "border-2": ""}`}>
+                                <input onChange={e => setUserMensagem({...userMensagem, mensagem: e.target.value})} className="h-[100%] w-[80%] text-2xl pl-3 pr-3 focus:outline-0" type="text" placeholder="Insira uma mensagem:" value={userMensagem.mensagem} />
+                                <input onClick={() => pegar_mensagem_ia()} className="xl:w-[17.8%] w-[16.3%] bg-cover bg-no-repeat bg-[url(./assets/aviao-de-envio.png)]" type="button" value="" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`w-full flex items-center ${aberta ? "h-[7%]" : "h-full"}`}>
+                        <input onClick={() => setAberta(!aberta)} className={`h-[80%] w-14 ml-5 rounded-2xl bg-cover bg-no-repeat bg-[url(./assets/Triangulo.png)] cursor-pointer transition-transform duration-1 ease-in-out ${aberta ? "rotate-[180deg]" : "rotate-[0deg]"}`} type="button" value="" />
+                    </div>
+                </div>
+
                 <div className="h-10 mt-5 flex z-10">
                     <input onChange={e => pega_dados(e)} className="h-20 w-[75%] ml-4 border-b-2 p-2 lg:text-4xl text-[140%] outline-none" id="anotacao" value={dados.anotacao} placeholder="Insira uma anotação" type="text" />
 

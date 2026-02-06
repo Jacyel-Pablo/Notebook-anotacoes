@@ -16,12 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import ia, pegar_chats_antigo
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('cadastro/', include('cadastro.urls')),
-    path('chatbot_ia/', include('chatbot_ia.urls')),
-    path('login/', include("login.urls")),
-    path('tokens/', include("tokens.urls")),
-    path('anotacao/', include("anotacao.urls")),
+    path('ia/', ia),
+    path('pegar_chats_antigo/', pegar_chats_antigo)
 ]

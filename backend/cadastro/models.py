@@ -10,4 +10,4 @@ class notebook_usuario(models.Model):
     senha = models.CharField(max_length=800)
 
     def __str__(self):
-        return f"id: {self.id} | email: {self.nome} | senha: {self.senha} | ativo: {self.ativo}"
+        return f"id: {self.id} | email: {self.nome} | senha: {self.senha}"

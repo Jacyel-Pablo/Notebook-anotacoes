@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'login',
     'tokens',
     'anotacao',
+    'chatbot_ia',
     'corsheaders'
 ]
 

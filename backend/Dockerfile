@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install pip requirements
 COPY requirements.txt .
-RUN python -m pip install -r requirements.txt && pip install PyJWT && pip install python-dotenv && pip install django-cors-headers && pip install cryptography && pip install psycopg2-binary && pip install whitenoise
+RUN python -m pip install -r requirements.txt && pip install PyJWT && pip install python-dotenv && pip install django-cors-headers && pip install cryptography && pip install psycopg2-binary && pip install whitenoise && pip install openai
 
 WORKDIR /app
 COPY . /app
