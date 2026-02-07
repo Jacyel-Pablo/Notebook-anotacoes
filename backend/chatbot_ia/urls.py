@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from .views import ia, pegar_chats_antigo
+from .views import ia, pegar_chats_antigo, limpar_historico_chat
 
 urlpatterns = [
     path('ia/', ia),
-    path('pegar_chats_antigo/', pegar_chats_antigo)
+    path('pegar_chats_antigo/', pegar_chats_antigo),
+    path('limpar_historico_chat/', limpar_historico_chat)
 ]

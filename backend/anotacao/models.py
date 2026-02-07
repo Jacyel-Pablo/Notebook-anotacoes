@@ -7,7 +7,7 @@ import uuid
 class notebook_anotacoes(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(notebook_usuario, on_delete=models.CASCADE)
-    anotacao = models.CharField(max_length=900)
+    anotacao = models.CharField(max_length=20000)
     data = models.DateField(auto_now_add=True)
 
     def __str__(self):

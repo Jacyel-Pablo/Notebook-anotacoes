@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from .models import notebook_usuario
+from chatbot_ia.models import notebook_mensagens_ia
 from jwt import decode
 from dotenv import load_dotenv
 import hashlib
@@ -66,6 +67,8 @@ def apagar_usuario(request):
 
                 try:
                     notebook_usuario.objects.get(id=usuario_id).delete()
+
+                    notebook_mensagens_ia.objects.filter(id_usuario=usuario_id).delete()
 
                     return JsonResponse({"erro": ""})
 

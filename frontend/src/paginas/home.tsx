@@ -106,7 +106,7 @@ export default function Home(props: any)
     // Elemento da janela que pergunta se realmente vc que apagar a mensagem
     const elemento_abre_fechar: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
-    // Essa função abre e fechar a janela que pergunta se realmente vc que apagar a mensagem
+    // Essa função abre e fechar a janela que pergunta se realmente vc que apagar a mensagem, usuário ou o chat da ia
     function abre_fechar(e: any, apagar_o_que: string): void
     {
         if (e.target.id === "fechado") {
@@ -118,10 +118,18 @@ export default function Home(props: any)
                     apagar_o_que: apagar_o_que
                 })
 
-            } else {
+            } else if (apagar_o_que === "apagar_usuário") {
                 setAbreFecharJanela({
                     ...abreFecharJanela,
                     mensagem_1: "Você realmente que apagar o usuário atual ? ",
+                    mensagem_2: " essa ação não podera se desfeita",
+                    apagar_o_que: apagar_o_que
+                })
+
+            } else {
+                setAbreFecharJanela({
+                    ...abreFecharJanela,
+                    mensagem_1: "Você realmente gostaria de apagar o histórico do chat ? ",
                     mensagem_2: " essa ação não podera se desfeita",
                     apagar_o_que: apagar_o_que
                 })
@@ -131,7 +139,7 @@ export default function Home(props: any)
             anotacao_element.current = e.target.parentElement?.parentElement
 
             // abre a tela de confirmação para apagar mensagem
-            elemento_abre_fechar.current!.className = "h-[100dvh] w-[100dvw] fixed"
+            elemento_abre_fechar.current!.className = "h-[100dvh] w-[100dvw] fixed z-20"
         
         } else {
             // pegar div corpo
@@ -142,11 +150,13 @@ export default function Home(props: any)
     // Aqui vai ficar o elemento da anotacao que vai se "apagada"
     const anotacao_element: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
+    // Apagar as anotações ou usuário atual ou então as mensagens do chat de ia
     async function deletar_anotacao()
     {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
+        // Se for para apagar a mensagem entrar aqui
         if (abreFecharJanela.apagar_o_que === "mensagem") {
             await fetch(`${backend}/anotacao/apagar_anotacao/`, {
                 method: "DELETE",
@@ -185,7 +195,8 @@ export default function Home(props: any)
                 }
             })
 
-        } else {
+        // Se for para apagar o usuário entrar aqui
+        } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
             await fetch(`${backend}/cadastro/apagar_usuario/`, {
                 method: "DELETE",
                 headers: {
@@ -201,6 +212,27 @@ export default function Home(props: any)
                     await cookieStore.delete("jwt")
                     await cookieStore.delete("csrftoken")
                     location.href = "/"
+
+                } else {
+                    alert(res["erro"])
+                }
+            })
+
+        // Se for para apagar o historico do chat de ia entrar aqui
+        } else {
+            await fetch(`${backend}/chatbot_ia/limpar_historico_chat/`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                credentials: "include"
+
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    alert("Mensagens do chat apagador com sucesso")
+
+                    setListaMensagensIa([])
 
                 } else {
                     alert(res["erro"])
@@ -236,12 +268,14 @@ export default function Home(props: any)
             carregando: true
         })
 
-        await fetch(`${backend}/chatbot_ia/ia/?msg=${userMensagem.mensagem}`, {
+        await fetch(`${backend}/chatbot_ia/ia/`, {
+            method: "POST",
             headers: {
                 "X-CSRFToken": csrf_token?.value ?? "",
                 "Authorization" : `Bearer ${token_jwt?.value}`
             },
-            credentials: "include"
+            credentials: "include",
+            body: JSON.stringify({"lista_msg": listaMensagensIa, "msg": userMensagem.mensagem})
 
         }).then(res => res.json()).then(res => {
             if (res["erro"].length === 0) {
@@ -343,10 +377,10 @@ export default function Home(props: any)
                 </div>
             </div>
 
-            <form className="h-[100%] xl:w-[40%] w-[100%] xl:ml-[30%] overflow-hidden ml-0 bg-cover bg-no-repeat bg-[url(./assets/bg_home.jpg)]">
-                {/* Chat de conversa com a ia */}
+            {/* Chat de conversa com a ia */}
+            <form className="h-[100%] xl:w-[40%] w-[100%] z-10 xl:ml-[30%] overflow-hidden ml-0 bg-cover bg-no-repeat bg-[url(./assets/bg_home.jpg)]">
                 <div className={`fixed bottom-[6dvh] ml-[5%] xl:w-[30%] w-[90%] bg-orange-400 rounded-3xl transition-all duration-200 ease-in-out ${aberta ? "h-[80%]" : "h-[5%]"}`}>
-                    <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[93%]": "h-0"} cursor-default`}>
+                    <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[83%]": "h-0"} cursor-default`}>
                         <nav className="h-[15%] flex items-center rounded-t-3xl bg-orange-400">
                             <img className="h-[80%] xl:w-[15.7%] w-[18%] xl:ml-15 ml-6 rounded-full" src="https://raw.githubusercontent.com/Jacyel-Pablo/Iamai/refs/heads/main/Meu%20Projeto/Iamai(1).png" alt="Avatar Iamai" />
                             <h1 className={`ml-5 ${aberta ? "text-4xl": "text-[0%]"}`}>Iamai</h1>
@@ -384,12 +418,19 @@ export default function Home(props: any)
                             }
                         </div>
 
+                        {/* Aba de escrever e enviar o chat da ia */}
                         <div className="h-[10%] flex justify-center items-center">
                             <div className={`h-[80%] w-[90%] flex rounded-2xl ${aberta ? "border-2": ""}`}>
                                 <input onChange={e => setUserMensagem({...userMensagem, mensagem: e.target.value})} className="h-[100%] w-[80%] text-2xl pl-3 pr-3 focus:outline-0" type="text" placeholder="Insira uma mensagem:" value={userMensagem.mensagem} />
                                 <input onClick={() => pegar_mensagem_ia()} className="xl:w-[17.8%] w-[16.3%] bg-cover bg-no-repeat bg-[url(./assets/aviao-de-envio.png)]" type="button" value="" />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Aba de apagar o chat da ia */}
+                    <div className={`${aberta ? "h-[10%]" : "h-0"} flex justify-center items-center`}>
+                        <p className={`${aberta ? "xl:text-2xl text-[100%]" : "text-[0%]"} text-white`}>Apagar chat da conversar</p>
+                        <input onClick={e => abre_fechar(e, "historico_chat")} className="h-[80%] w-24 xl:ml-5 ml-3 xl:text-2xl text-[100%] text-white rounded-2xl bg-gray-500 hover:bg-gray-600" id="fechado" type="button" value="Apagar" />
                     </div>
 
                     <div className={`w-full flex items-center ${aberta ? "h-[7%]" : "h-full"}`}>
@@ -413,17 +454,19 @@ export default function Home(props: any)
 
                 {/* Corpo aonde vai ficar as mensagens */}
                 <div className="h-[74%] lg:h-[85.6%] overflow-y-auto overflow-x-hidden mt-[2%]">
-                    {/* Folha de anotações */}
+                    {/* Anotações de anotações */}
                     {dados.anotacoes_list.map((value, i) => {
                         return (
-                            <div key={i} className={`h-80 w-[75%] ml-12 mt-12 overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
-                                <div className="h-16 flex items-center justify-end">
-                                    {/* Pegando a data e colocando ela em dia mes e ano */}
-                                    <p className="text-2xl mr-7">{value["data"].split("-")[2] + "/" + value["data"].split("-")[1] + "/" + value["data"].split("-")[0]}</p>
-                                    <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e, "mensagem")}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
-                                </div>
-                                <div className="h-[80%] w-[90%] ml-8 overflow-x-hidden">
-                                    <p className="text-4xl">{value["anotacao"]}</p>
+                            <div key={i}>
+                                <div className={`h-80 w-[75%] ml-12 mt-12 ${i === dados.anotacoes_list.length - 1 ? "mb-28" : ""} overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
+                                    <div className="h-16 flex items-center justify-end">
+                                        {/* Pegando a data e colocando ela em dia mes e ano */}
+                                        <p className="text-2xl mr-7">{value["data"].split("-")[2] + "/" + value["data"].split("-")[1] + "/" + value["data"].split("-")[0]}</p>
+                                        <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e, "mensagem")}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
+                                    </div>
+                                    <div className="h-[80%] w-[90%] ml-8 overflow-x-hidden">
+                                        <p className="text-4xl">{value["anotacao"]}</p>
+                                    </div>
                                 </div>
                             </div>
                         )
