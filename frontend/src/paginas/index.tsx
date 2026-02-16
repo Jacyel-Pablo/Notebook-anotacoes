@@ -66,8 +66,8 @@ export default function Index(props:any)
     }
 
     return (
-        <div className="h-[100dvh] w-[100dvw] flex items-center justify-center bg-amber-100">
-            <form className="h-[38%] xl:w-[40%] w-[100%] bg-[url(./assets/login.jpg)] bg-cover bg-no-repeat overflow-hidden">
+        <div className="h-[100dvh] w-[100dvw] flex items-center justify-center bg-orange-100">
+            <form className="h-[38%] xl:w-[40%] w-[100%] rounded-4xl bg-[url(./assets/login.jpg)] bg-cover bg-no-repeat overflow-hidden">
                 <div className="w-[100%] grid grid-cols-3 text-end overflow-hidden md:mt-28 lg:mt-7 md:mt-32 mt-5">
                     <p className="mr-5 text-3xl">Nome:</p>
                     <input onChange={e =>  pegar_dados(e)} className="bg-gray-200 h-8 lg:w-64 w-60 ml-0 mt-1 border-2 rounded-2xl p-3" id="nome" type="text" placeholder="Insira um nome:" />

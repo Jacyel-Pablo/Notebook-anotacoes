@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react"
 
-export default function Home(props: any)
-{
+export default function Home(props: any) {
     const backend = props.backend
     // Pegando csrf_token do navegador
 
@@ -19,7 +18,7 @@ export default function Home(props: any)
         csrftoken: CookieListItem | null
     }
 
-    const [ dados, setDados ] = useState<Dados>({
+    const [dados, setDados] = useState<Dados>({
         anotacao: "",
         anotacoes_list: [],
 
@@ -27,13 +26,13 @@ export default function Home(props: any)
         csrftoken: null
     })
 
-    interface AbreFecharJanela{
+    interface AbreFecharJanela {
         mensagem_1: string,
         mensagem_2: string,
         apagar_o_que: string
     }
 
-    const [ abreFecharJanela, setAbreFecharJanela ] = useState<AbreFecharJanela>({
+    const [abreFecharJanela, setAbreFecharJanela] = useState<AbreFecharJanela>({
         mensagem_1: "",
         mensagem_2: "",
         apagar_o_que: "",
@@ -41,23 +40,20 @@ export default function Home(props: any)
 
     const [aberta, setAberta] = useState(false);
 
-    function pega_dados(e: any):void
-    {
+    function pega_dados(e: any): void {
         setDados({
             ...dados,
             [e.target.id]: e.target.value
         })
     }
 
-    function sair_usuario():void
-    {
+    function sair_usuario(): void {
         cookieStore.delete("csrftoken")
         cookieStore.delete("jwt")
         location.href = "/"
     }
 
-    async function enviar_anotacao()
-    {
+    async function enviar_anotacao() {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
@@ -71,6 +67,7 @@ export default function Home(props: any)
                     "Authorization": `Bearer ${token_jwt?.value}`
                 },
                 body: JSON.stringify({
+                    id_topico: idTopicoAtual,
                     anotacao: dados.anotacao,
                 })
 
@@ -107,8 +104,7 @@ export default function Home(props: any)
     const elemento_abre_fechar: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
     // Essa função abre e fechar a janela que pergunta se realmente vc que apagar a mensagem, usuário ou o chat da ia
-    function abre_fechar(e: any, apagar_o_que: string): void
-    {
+    function abre_fechar(e: any, apagar_o_que: string): void {
         if (e.target.id === "fechado") {
             if (apagar_o_que === "mensagem") {
                 setAbreFecharJanela({
@@ -140,7 +136,7 @@ export default function Home(props: any)
 
             // abre a tela de confirmação para apagar mensagem
             elemento_abre_fechar.current!.className = "h-[100dvh] w-[100dvw] fixed z-20"
-        
+
         } else {
             // pegar div corpo
             elemento_abre_fechar.current!.className = "h-[0dvh] w-[0dvw] fixed"
@@ -151,8 +147,7 @@ export default function Home(props: any)
     const anotacao_element: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
     // Apagar as anotações ou usuário atual ou então as mensagens do chat de ia
-    async function deletar_anotacao()
-    {
+    async function deletar_anotacao() {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
@@ -173,7 +168,15 @@ export default function Home(props: any)
                 if (res["valor"] === true) {
                     alert("Mensagem apagadar com sucesso!")
 
-                    anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0"
+                    // Div 1
+                    anotacao_element.current!.children[0].className = ""
+                    anotacao_element.current!.children[0]!.children[0].className = "text-[0%]"
+                    anotacao_element.current!.children[0]!.children[1].className = "text-[0%]"
+                    
+                    // Div 2
+                    anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
+                    anotacao_element.current!.children[1]!.children[0].className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
+                    anotacao_element.current!.children[1]!.children[0].className = "text-[0%]"
                     anotacao_element.current = null
 
                     setDados({
@@ -195,14 +198,14 @@ export default function Home(props: any)
                 }
             })
 
-        // Se for para apagar o usuário entrar aqui
+            // Se for para apagar o usuário entrar aqui
         } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
             await fetch(`${backend}/cadastro/apagar_usuario/`, {
                 method: "DELETE",
                 headers: {
                     "X-CSRFToken": csrf_token?.value ?? "",
                     "Authorization": `Bearer ${token_jwt?.value}`
-                },   
+                },
                 credentials: "include",
 
             }).then(res => res.json()).then(async res => {
@@ -218,7 +221,7 @@ export default function Home(props: any)
                 }
             })
 
-        // Se for para apagar o historico do chat de ia entrar aqui
+            // Se for para apagar o historico do chat de ia entrar aqui
         } else {
             await fetch(`${backend}/chatbot_ia/limpar_historico_chat/`, {
                 method: "DELETE",
@@ -246,20 +249,19 @@ export default function Home(props: any)
         mensagem_ia: string
     }
 
-    const [ listaMensagensIa, setListaMensagensIa ] = useState<ListaMensagensIa[]>([])
-    
-    interface UserMensagem{
+    const [listaMensagensIa, setListaMensagensIa] = useState<ListaMensagensIa[]>([])
+
+    interface UserMensagem {
         mensagem: string,
         carregando: boolean
     }
 
-    const [ userMensagem, setUserMensagem ] = useState<UserMensagem>({
+    const [userMensagem, setUserMensagem] = useState<UserMensagem>({
         mensagem: "",
         carregando: false
     })
 
-    async function pegar_mensagem_ia()
-    {
+    async function pegar_mensagem_ia() {
         const token_jwt = await cookieStore.get("jwt")
         const csrf_token = await cookieStore.get("csrftoken")
 
@@ -272,10 +274,10 @@ export default function Home(props: any)
             method: "POST",
             headers: {
                 "X-CSRFToken": csrf_token?.value ?? "",
-                "Authorization" : `Bearer ${token_jwt?.value}`
+                "Authorization": `Bearer ${token_jwt?.value}`
             },
             credentials: "include",
-            body: JSON.stringify({"lista_msg": listaMensagensIa, "msg": userMensagem.mensagem})
+            body: JSON.stringify({ "lista_msg": listaMensagensIa, "msg": userMensagem.mensagem })
 
         }).then(res => res.json()).then(res => {
             if (res["erro"].length === 0) {
@@ -301,12 +303,154 @@ export default function Home(props: any)
         })
     }
 
-    useEffect(() => {
-        async function main()
-        {
+    interface Topico {
+        id: string
+        nome_topico: string
+    }
+
+    const [ listaTopicos, setListaTopicos ] = useState<Topico[]>([])
+
+    // Colocar o id do tópico atual
+    const [ idTopicoAtual, setIdTopicoAtual ] = useState("")
+
+    interface AbrirMenuTopicos {
+        abrir: boolean
+    }
+
+    // Abrir o menu que lista os tópicos da versão mobile
+    const [ abrirMenuTopicos, setAbrirMenuTopicos ] = useState<AbrirMenuTopicos>({
+        abrir: false
+    })
+
+    interface CriarTopico{
+        abrir: boolean,
+        topico: string
+    }
+
+    // Abre parte de adicionar um tópico novo a lista de tópicos
+    const [ criarTopico, setCriarTopico ] = useState<CriarTopico>({
+        abrir: false,
+        topico: ""
+    })
+
+    const [ nomeTopicoAtual, setNomeTopicoAtual ] = useState("Todos")
+
+    // Enviar titulo do tópico que foi criado
+    async function criarEnviarTopico() {
+        const csrf_token = await cookieStore.get("csrftoken")
+        const token_jwt = await cookieStore.get("jwt")
+
+        await fetch(`${backend}/topicos/criar_topico/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf_token?.value ?? "",
+                "Authorization": `Bearer ${token_jwt?.value}`
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                "topico": criarTopico.topico
+            })
+
+        }).then(res => res.json()).then(res => {
+            if (res["erro"].length === 0) {
+                // alert("Tópico criado com sucesso")
+
+                const lista_topicos = [...listaTopicos]
+                lista_topicos.push({"id": res["valor"].toString(), "nome_topico": criarTopico["topico"]})
+
+                setListaTopicos(lista_topicos)
+
+                setCriarTopico({
+                    ...criarTopico,
+                    abrir: false,
+                    topico: ""
+                })
+
+            } else {
+                alert(res["erro"])
+            }
+        })
+    }
+
+    function abreeFecharInputRenomeiaTopico(e: any) {
+        let inputRenomeiaTopico
+        let inputCancelarTopico
+        let paragrafoTopico
+
+        if (e.target.id != "cancelar") {
+            inputRenomeiaTopico = e.target!.parentElement!.parentElement!.parentElement!.children[0].children[0]
+            inputCancelarTopico = e.target!.parentElement!.parentElement!.parentElement!.children[0].children[1]
+            paragrafoTopico = e.target!.parentElement!.parentElement!.parentElement!.children[0].children[2]
+
+        } else {
+            inputRenomeiaTopico = e.target!.parentElement.children[0]
+            inputCancelarTopico = e.target!.parentElement.children[1]
+            paragrafoTopico = e.target!.parentElement.children[2]
+        }
+
+        setMenuAbertoSelectTopico(null)
+
+        if (inputRenomeiaTopico.id === "fechado") {
+            paragrafoTopico.className = "text-[0%] px-0 whitespace-nowrap"
+            inputCancelarTopico.className = "h-12 w-[30%] text-2xl rounded-2xl border-2 ml-4"
+            inputRenomeiaTopico.id = "aberto"
+            inputRenomeiaTopico.className = "h-[70%] w-[60%] text-3xl ml-[5%] border-b-2 focus:outline-0 focus:border-b-2"
+        
+        } else {
+            paragrafoTopico.className = "text-4xl px-4 whitespace-nowrap"
+            inputCancelarTopico.className = "text-[0%]"
+            inputRenomeiaTopico.id = "fechado"
+            inputRenomeiaTopico.value = ""
+            inputRenomeiaTopico.className = "h-0 w-0 text-[0%]"
+        }
+    }
+
+    async function atualizarTopico(e: any, idTopico: string) {
+        if (e.key === "Enter") {
             const csrf_token = await cookieStore.get("csrftoken")
             const token_jwt = await cookieStore.get("jwt")
 
+            await fetch(`${backend}/topicos/atualizarTopico/`, {
+                method: "PATCH",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    id_topico: idTopico,
+                    novo_nome: e.target.value
+                })
+
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    e.target!.parentElement!.children[2].textContent = e.target.value
+
+                    e.target!.parentElement!.children[1]
+
+                    // Abrindo o paragrafo
+                    e.target!.parentElement!.children[2].className = "text-4xl px-4 whitespace-nowrap"
+                    
+                    // Tirando o botão cancelar
+                    e.target!.parentElement!.children[1].className = "text-[0%]"
+
+                    // Configurando o input para renomeia o tópico
+                    e.target!.parentElement!.children[0].id = "fechado"
+                    e.target!.parentElement!.children[0].value = ""
+                    e.target!.parentElement!.children[0].className = "h-0 w-0 text-[0%]"
+
+                } else {
+                    alert(res["erro"])
+                }
+            })
+        }
+    }
+
+    async function pegarTopicoAtual(id_topico: string) {
+        const csrf_token = await cookieStore.get("csrftoken")
+        const token_jwt = await cookieStore.get("jwt")
+
+        if (id_topico.length === 0) {
             await fetch(`${backend}/anotacao/pegar_anotacao/`, {
                 credentials: "include",
                 headers: {
@@ -316,6 +460,7 @@ export default function Home(props: any)
 
             }).then(res => res.json()).then(async res => {
                 if (res["valor"] === true) {
+                    console.log(res["dados"])
                     setDados({
                         ...dados,
                         anotacoes_list: res["dados"],
@@ -326,7 +471,7 @@ export default function Home(props: any)
                     await fetch(`${backend}/chatbot_ia/pegar_chats_antigo/`, {
                         headers: {
                             "X-CSRFToken": csrf_token?.value ?? "",
-                            "Authorization" : `Bearer ${token_jwt?.value}`
+                            "Authorization": `Bearer ${token_jwt?.value}`
                         },
                         credentials: "include"
 
@@ -349,6 +494,156 @@ export default function Home(props: any)
                     }
                 }
             })
+
+        } else {
+            await fetch(`${backend}/anotacao/pegar_topico_anotacao/?id_topicos=${id_topico}`, {
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                credentials: "include",
+
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    setDados({
+                        ...dados,
+                        anotacoes_list: res["valor"]
+                    })                
+
+                } else {
+                    alert(res["erro"])
+                }
+
+            })
+        }
+
+    }
+
+    // Deleta o tópico atual
+    async function apagarTopico(idTopico: string, e: any) {
+        const csrf_token = await cookieStore.get("csrftoken")
+        const token_jwt = await cookieStore.get("jwt")
+
+        // div de tópicos
+        const divTopico: HTMLElement = e.target!.parentElement!.parentElement!.parentElement
+
+        // elemento dos 3 pontinhos
+        const buttonTresPontinhos: HTMLElement = e.target!.parentElement!.parentElement!.children[0]
+
+        // Quando estive na função ele vai fechar o menu de seleções
+        setMenuAbertoSelectTopico(null)
+
+        // Rota para deletar o tópico selecionado
+        await fetch(`${backend}/topicos/apagarTopico/`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRFToken": csrf_token?.value ?? "",
+                "Authorization": `Bearer ${token_jwt?.value}`
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                id_topico: idTopico
+            })
+
+        }).then(res => res.json()).then(res => {
+            if (res["erro"].length === 0) {
+                // Tirando da tela a div de tópicos
+                divTopico.className = "h-[0%] w-[0%]"
+
+                // Tirando os 3 pontinhos
+                buttonTresPontinhos.className="text-[0%] w-0 h-0"
+
+                // Configurando para voltar para todos os tópicos
+                setIdTopicoAtual("")
+                pegarTopicoAtual("")
+                setNomeTopicoAtual("Todos")
+                setAbrirMenuTopicos({abrir: false})
+                
+                alert("topico apagado com sucesso")
+
+            } else {
+                alert(res["erro"])
+            }
+
+        })
+    }
+
+    // Opção para excluir o renomeia os topicos
+    // Aqui vamos pegar o id para saber qual topico e o atual do listaTopicos
+    const [ menuAbertoSelectTopico, setMenuAbertoSelectTopico ] = useState<number | null>(null);
+
+    // Seta o número do listaTopicos atual
+    const toggleMenu = (index: number) => {
+        // Se clicar no que já está aberto, ele fecha. Se não, abre o novo.
+        setMenuAbertoSelectTopico(menuAbertoSelectTopico === index ? null : index);
+    };
+
+    useEffect(() => {
+        // Pegando anotações
+        async function main() {
+            const csrf_token = await cookieStore.get("csrftoken")
+            const token_jwt = await cookieStore.get("jwt")
+
+            await fetch(`${backend}/anotacao/pegar_anotacao/`, {
+                credentials: "include",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                }
+
+            }).then(res => res.json()).then(async res => {
+                if (res["valor"] === true) {
+                    console.log(res["dados"])
+                    setDados({
+                        ...dados,
+                        anotacoes_list: res["dados"],
+                    })
+
+                    // Pegando e colocando textos do usuario e da ia no frontend
+
+                    await fetch(`${backend}/chatbot_ia/pegar_chats_antigo/`, {
+                        headers: {
+                            "X-CSRFToken": csrf_token?.value ?? "",
+                            "Authorization": `Bearer ${token_jwt?.value}`
+                        },
+                        credentials: "include"
+
+                    }).then(res => res.json()).then(res => {
+                        if (res["erro"].length === 0) {
+                            setListaMensagensIa(res["valor"])
+
+                        } else {
+                            alert(res["erro"])
+                        }
+                    })
+
+                } else {
+                    if (res["erro"] != undefined) {
+                        alert(res["erro"])
+
+                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                            sair_usuario()
+                        }
+                    }
+                }
+            })
+
+            // Pegando a lista de topicos do usuário
+            await fetch(`${backend}/topicos/pegar_topicos/`, {
+                credentials: "include",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                }
+
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    setListaTopicos(res["valor"])
+
+                } else {
+                    alert(res["erro"])
+                }
+            })
         }
 
         main()
@@ -356,7 +651,24 @@ export default function Home(props: any)
     }, [])
 
     return (
-        <div className="h-[100dvh] flex bg-amber-100">
+        <div className="h-[100dvh] flex bg-orange-100">
+
+            {/* Tela de adicionar um novo topico */}
+            <div className={`${criarTopico.abrir ? "h-[100dvh] w-[100dvw] z-30" : "h-[0dvh] w-[0dvw]"} fixed`}>
+                <div className="h-[60%] w-[100%] rounded-3xl xl:w-[35%] mt-[20dvh] xl:ml-[32.5%] bg-white">
+                    <div className="h-[80%] overflow-hidden">
+                        <h1 className="text-6xl text-center font-bold mt-7">Criar tópico</h1>
+
+                        <p className="text-2xl xl:text-4xl mt-5 pl-[5%] pr-[5%]">Insira um nome para o tópico:</p>
+                        <input onChange={e => setCriarTopico({...criarTopico, topico: e.target.value})} value={criarTopico.topico} className="xl:h-20 h-14 xl:text-4xl text-2xl rounded-2xl border-2 p-4 w-[90%] mt-4 ml-[5%]" type="text" placeholder="Insira o nome para o tópico:" />
+                    </div>
+
+                    <div className="h-[20%] border-t-2 flex items-center justify-end">
+                        <input onClick={() => setCriarTopico({...criarTopico, abrir: false, topico: ""})} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
+                        <input onClick={() => criarEnviarTopico()} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Enviar" />
+                    </div>
+                </div>
+            </div>
 
             {/* Tela excluir mensagem */}
             {/* Div corpo */}
@@ -364,7 +676,7 @@ export default function Home(props: any)
                 <div className="h-[60%] w-[100%] rounded-3xl xl:w-[35%] mt-[20dvh] xl:ml-[32.5%] bg-white">
                     <div className="h-[80%] overflow-hidden">
                         <p className="mt-10 text-3xl pl-5">{abreFecharJanela.mensagem_1}<br />
-                        {abreFecharJanela.mensagem_2}</p>
+                            {abreFecharJanela.mensagem_2}</p>
                     </div>
                     <div className="h-[20%] border-t-2 flex items-center justify-end">
                         {/* Em desenvolvimento */}
@@ -372,18 +684,81 @@ export default function Home(props: any)
                             <p>Remover <br /> fundo</p>
                         </button> */}
                         <input onClick={e => abre_fechar(e, "")} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
-                        <input onClick={e => {deletar_anotacao(); abre_fechar(e, "")}} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
+                        <input onClick={e => { deletar_anotacao(); abre_fechar(e, "") }} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
                     </div>
                 </div>
             </div>
 
-            {/* Chat de conversa com a ia */}
-            <form className="h-[100%] xl:w-[40%] w-[100%] z-10 xl:ml-[30%] overflow-hidden ml-0 bg-cover bg-no-repeat bg-[url(./assets/bg_home.jpg)]">
+            {/* Parte de Tópicos */}
+            <div className={`h-full xl:w-[30%] w-[100%] xl:ml-0 ${abrirMenuTopicos.abrir ? "ml-0" : "ml-[-100%]"} transition-all dura duration-500 ease-in-out fixed xl:static flex flex-col bg-white xl:border-r-2 border-0 z-20`}>
+                <input onClick={() => setAbrirMenuTopicos({abrir: false})} className="xl:text-[0%] text-5xl ml-[80%] xl:mt-0 mt-2 rotate-[180deg]" type="button" value="⮕" />
+
+                <h1 className="text-7xl xl:mt-14 mt-0 text-center">Tópicos</h1>
+
+                <div onClick={() => {setIdTopicoAtual(""); pegarTopicoAtual(""); setNomeTopicoAtual("Todos"); setAbrirMenuTopicos({abrir: false})}} className="h-16 w-[95%] flex items-center overflow-y-hidden ml-[2.5%] mt-8 border-2 rounded-4xl hover:bg-gray-300 active:bg-gray-300 cursor-pointer">
+                    <p className="text-4xl px-4 whitespace-nowrap">Todos</p>
+                </div>
+
+            {listaTopicos.map((item, index) => (
+                <div key={index} onClick={() => {setNomeTopicoAtual(item["nome_topico"]); setAbrirMenuTopicos({abrir: false})}} className="relative h-16 w-[95%] flex border-2 rounded-4xl mt-8 ml-[2.5%] hover:bg-gray-300 active:bg-gray-300 cursor-pointer">
+                    
+                    {/* Lado Esquerdo: Conteúdo principal */}
+                    <div 
+                        onClick={() => {setIdTopicoAtual(item["id"]); pegarTopicoAtual(item["id"])}} 
+                        className="h-16 w-[90%] flex items-center overflow-y-hidden"
+                    >
+                        <input onKeyDown={e => atualizarTopico(e, item["id"])} onClick={e => e.stopPropagation()} className="h-0 w-0 text-[0%]" id="fechado" type="text" />
+                        <input onClick={e => {e.stopPropagation(); abreeFecharInputRenomeiaTopico(e)}} className="text-[0%]" id="cancelar" type="button" value="Cancelar" />
+                        <p className="text-4xl px-4 whitespace-nowrap">{item["nome_topico"]}</p>
+                    </div>
+
+                    {/* Botão de Opções */}
+                    <div className="w-[10%] flex items-center justify-center relative">
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation(); 
+                                toggleMenu(index);
+                            }}
+                            className="text-3xl hover:bg-gray-400 rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+                        >
+                            ⋮
+                        </button>
+
+                        {/* MENU COM CLICK-AWAY */}
+                        {menuAbertoSelectTopico === index && (
+                            <>
+                                {/* 1. Overlay invisível que cobre toda a tela */}
+                                <div 
+                                    className="fixed inset-0 z-10 cursor-default" 
+                                    onClick={() => setMenuAbertoSelectTopico(null)}
+                                ></div>
+
+                                {/* 2. O Menu propriamente dito (agora com z-20 para ficar acima do overlay) */}
+                                <div className="absolute right-0 top-12 w-52 bg-white border border-gray-200 rounded-xl shadow-2xl z-20 py-2 animate-in fade-in zoom-in duration-150">
+                                    <button onClick={e => abreeFecharInputRenomeiaTopico(e)} className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 text-base">
+                                        <span>✏️</span> Renomear
+                                    </button>
+                                    <hr className="my-1 border-gray-100" />
+                                    <button onClick={e => apagarTopico(item["id"], e)} className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 text-base text-red-500 font-medium">
+                                        <span>🗑️</span> Excluir
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            ))}
+            </div>
+
+            <form className="h-[100%] xl:w-[40%] w-[100%] z-10 overflow-hidden ml-0 bg-cover bg-no-repeat bg-[url(./assets/bg_home.jpg)]">
+
+                <input onClick={() => setAbrirMenuTopicos({abrir: true})} className="xl:text-[0%] text-5xl ml-5" type="button" value="⮕" />
+
                 <div className={`fixed bottom-[6dvh] ml-[5%] xl:w-[30%] w-[90%] bg-orange-400 rounded-3xl transition-all duration-200 ease-in-out ${aberta ? "h-[80%]" : "h-[5%]"}`}>
-                    <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[83%]": "h-0"} cursor-default`}>
+                    <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[83%]" : "h-0"} cursor-default`}>
                         <nav className="h-[15%] flex items-center rounded-t-3xl bg-orange-400">
                             <img className="h-[80%] xl:w-[15.7%] w-[18%] xl:ml-15 ml-6 rounded-full" src="https://raw.githubusercontent.com/Jacyel-Pablo/Iamai/refs/heads/main/Meu%20Projeto/Iamai(1).png" alt="Avatar Iamai" />
-                            <h1 className={`ml-5 ${aberta ? "text-4xl": "text-[0%]"}`}>Iamai</h1>
+                            <h1 className={`ml-5 ${aberta ? "text-4xl" : "text-[0%]"}`}>Iamai</h1>
                         </nav>
 
                         <div className="h-[75.4%] overflow-x-hidden">
@@ -399,7 +774,7 @@ export default function Home(props: any)
                                         <div id="comentario_user" className={`${aberta ? "bg-gray-400 mt-10 mb-10 xl:ml-[10%] ml-[15%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
                                             <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>{item.mensagem_usuario}</p>
                                         </div>
-                                        
+
                                         {/* Id comentario do ia */}
                                         <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
                                             <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>{item.mensagem_ia}</p>
@@ -413,15 +788,15 @@ export default function Home(props: any)
                                 <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
                                     <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Carregando resposta</p>
                                 </div>
-                            :
+                                :
                                 <div></div>
                             }
                         </div>
 
                         {/* Aba de escrever e enviar o chat da ia */}
                         <div className="h-[10%] flex justify-center items-center">
-                            <div className={`h-[80%] w-[90%] flex rounded-2xl ${aberta ? "border-2": ""}`}>
-                                <input onChange={e => setUserMensagem({...userMensagem, mensagem: e.target.value})} className="h-[100%] w-[80%] text-2xl pl-3 pr-3 focus:outline-0" type="text" placeholder="Insira uma mensagem:" value={userMensagem.mensagem} />
+                            <div className={`h-[80%] w-[90%] flex rounded-2xl ${aberta ? "border-2" : ""}`}>
+                                <input onChange={e => setUserMensagem({ ...userMensagem, mensagem: e.target.value })} className="h-[100%] w-[80%] text-2xl pl-3 pr-3 focus:outline-0" type="text" placeholder="Insira uma mensagem:" value={userMensagem.mensagem} />
                                 <input onClick={() => pegar_mensagem_ia()} className="xl:w-[17.8%] w-[16.3%] bg-cover bg-no-repeat bg-[url(./assets/aviao-de-envio.png)]" type="button" value="" />
                             </div>
                         </div>
@@ -438,18 +813,24 @@ export default function Home(props: any)
                     </div>
                 </div>
 
-                <div className="h-10 mt-5 flex z-10">
+                <div className="h-10 xl:mt-5 mt-0 flex z-10">
                     <input onChange={e => pega_dados(e)} className="h-20 w-[75%] ml-4 border-b-2 p-2 lg:text-4xl text-[140%] outline-none" id="anotacao" value={dados.anotacao} placeholder="Insira uma anotação" type="text" />
 
                     <input onClick={() => enviar_anotacao()} className="h-16 w-40 mt-2 ml-2 border-2 rounded-4xl text-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Enviar" />
                 </div>
 
-                {/* Botões sair da versão mobile */}
+                {/* Botões sair, apagar conta e criar tópico da versão mobile */}
                 <div className="h-10 w-[100%] xl:mt-0 mt-12 flex items-center justify-end align-middle">
-                    <input onClick={e => abre_fechar(e, "apagar_usuário")} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" id="fechado" type="button" value="Apagar conta" />
+                    <input onClick={() => setCriarTopico({...criarTopico, abrir: true})} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" id="fechado" type="button" value="Criar tópico" />
                     
+                    <input onClick={e => abre_fechar(e, "apagar_usuário")} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" id="fechado" type="button" value="Apagar conta" />
+
                     <input onClick={() => sair_usuario()} className="h-8 lg:h-14 xl:w-0 w-32 xl:border-0 border-2 lg:text-4xl rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Sair" />
 
+                </div>
+
+                <div className="h-24 w-full overflow-y-hidden text-center flex items-center">
+                    <h1 className="text-4xl pl-5 pr-5 whitespace-nowrap">Nome do tópico atual: {nomeTopicoAtual}</h1>
                 </div>
 
                 {/* Corpo aonde vai ficar as mensagens */}
@@ -458,12 +839,15 @@ export default function Home(props: any)
                     {dados.anotacoes_list.map((value, i) => {
                         return (
                             <div key={i}>
-                                <div className={`h-80 w-[75%] ml-12 mt-12 ${i === dados.anotacoes_list.length - 1 ? "mb-28" : ""} overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
+                                <div className={`h-80 w-[75%] ml-12 mt-4 rounded-3xl ${i === dados.anotacoes_list.length - 1 ? "mb-28" : ""} overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
+                                    {/* Div 1 */}
                                     <div className="h-16 flex items-center justify-end">
                                         {/* Pegando a data e colocando ela em dia mes e ano */}
                                         <p className="text-2xl mr-7">{value["data"].split("-")[2] + "/" + value["data"].split("-")[1] + "/" + value["data"].split("-")[0]}</p>
-                                        <input onClick={e => {setDados({...dados, id_anotacao_apagar: value["id"]}) ;abre_fechar(e, "mensagem")}} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
+                                        <input onClick={e => { setDados({ ...dados, id_anotacao_apagar: value["id"] }); abre_fechar(e, "mensagem") }} className="h-[70%] w-20 mr-7 text-3xl border-2 rounded-3xl bg-red-800 hover:bg-red-700 active:bg-red-700" id="fechado" type="button" value="X" />
                                     </div>
+
+                                    {/* Div 2 */}
                                     <div className="h-[80%] w-[90%] ml-8 overflow-x-hidden">
                                         <p className="text-4xl">{value["anotacao"]}</p>
                                     </div>
@@ -474,9 +858,11 @@ export default function Home(props: any)
                 </div>
             </form>
 
-            {/* Botões mudar apagar conta e sair da versão desktop */}
-            <div className="h-20 xl:w-[30%] w-0 flex items-center justify-end align-middle">
+            {/* Botões mudar apagar conta, sair e criar tópico da versão desktop */}
+            <div className="h-20 xl:w-auto w-0 flex items-center justify-end align-middle">
                 {/* Em desenvolvimento */}
+                <input onClick={() => setCriarTopico({...criarTopico, abrir: true})} className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Criar tópico" />
+
                 <input onClick={e => abre_fechar(e, "apagar_usuário")} className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" id="fechado" type="button" value="Apagar conta" />
 
                 <input onClick={() => sair_usuario()} className="h-12 xl:w-32 w-0 xl:border-2 border-0 rounded-3xl ml-4 mr-4 text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950" type="button" value="Sair" />

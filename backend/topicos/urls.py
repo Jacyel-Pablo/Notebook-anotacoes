@@ -16,11 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import enviar_anotacao, pegar_anotacao, apagar_anotacao, pegar_topico_anotacao
+from .views import criarTopico, pegarTopicos, apagarTopico, atualizarTopico
 
 urlpatterns = [
-    path('enviar_anotacao/', enviar_anotacao),
-    path('pegar_anotacao/', pegar_anotacao),
-    path('apagar_anotacao/', apagar_anotacao),
-    path('pegar_topico_anotacao/', pegar_topico_anotacao)
+    path("criar_topico/", criarTopico),
+    path("pegar_topicos/", pegarTopicos),
+    path("apagarTopico/", apagarTopico),
+    path("atualizarTopico/", atualizarTopico)
 ]

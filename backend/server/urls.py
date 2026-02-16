@@ -24,4 +24,5 @@ urlpatterns = [
     path('login/', include("login.urls")),
     path('tokens/', include("tokens.urls")),
     path('anotacao/', include("anotacao.urls")),
+    path('topicos/', include("topicos.urls"))
 ]

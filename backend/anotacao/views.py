@@ -4,6 +4,7 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 from .models import notebook_anotacoes
 from cadastro.models import notebook_usuario
+from topicos.models import notebook_topicos
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from jwt import decode, InvalidIssuerError
 import json
@@ -23,6 +24,17 @@ def enviar_anotacao(request):
 
         try:
             usuario = notebook_usuario.objects.get(id=jwt["id"])
+            id_topico = dados["id_topico"]
+            topico = ""
+
+            if len(id_topico) > 0:
+                try:
+                    topico = notebook_topicos.objects.get(id=id_topico)
+
+                except Exception as e:
+                    print(e)
+
+                    return JsonResponse({"erro": "Ocorreu um erro inésperado"})
 
             try:
                 if request.method == "POST":
@@ -32,11 +44,19 @@ def enviar_anotacao(request):
 
                     # Verifica se o usuário existe
                     try:
-                        db_anotacaoes = notebook_anotacoes.objects.create(
-                            usuario=usuario,
-                            anotacao=anotacao
+                        if len(id_topico) > 0:
+                            db_anotacaoes = notebook_anotacoes.objects.create(
+                                usuario=usuario,
+                                id_topicos=topico,
+                                anotacao=anotacao
 
-                        )
+                            )
+                        
+                        else:
+                            db_anotacaoes = notebook_anotacoes.objects.create(
+                                usuario=usuario,
+                                anotacao=anotacao
+                            )
 
                         # Vamos descriptografa a anotação
                         descript = f.decrypt(db_anotacaoes.anotacao).decode("utf-8")
@@ -47,7 +67,9 @@ def enviar_anotacao(request):
                         
                         return JsonResponse({"valor": True, "dados": dados_anotacao})
 
-                    except:
+                    except Exception as e:
+                        print(e)
+
                         return JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar criar uma anotação"})
 
                 return JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar enviar a anotação"})
@@ -97,6 +119,45 @@ def pegar_anotacao(request):
     except InvalidIssuerError as e:
         print(e)
         return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+
+def pegar_topico_anotacao(request):
+    if request.method == "GET":
+        try:
+            jwt_token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
+            jwt_token = decode(jwt_token, os.getenv("JWT_KEY"), algorithms=["HS256"])
+
+            try:
+                id_topico = request.GET["id_topicos"]
+
+                topico = notebook_topicos.objects.get(id=id_topico)
+
+                anotacoes = notebook_anotacoes.objects.filter(usuario=jwt_token["id"], id_topicos=topico)
+
+                dados_anotacao = []
+
+                for i in anotacoes:
+                    # Vamos descriptografa a mensagem            
+                    descript = f.decrypt(i.anotacao).decode("utf-8")
+                    descript = str(descript)
+
+                    # Adicionado dado a lista
+
+                    dados_anotacao.append({"id": i.id, "anotacao": descript, "data": i.data})
+
+                return JsonResponse({"erro": "", "valor": dados_anotacao})
+
+            except Exception as e:
+                print(e)
+
+                return JsonResponse({"erro": "Ocorreu um erro ao tentar pegar as mensagens"})
+
+        except Exception as e:
+            print(e)
+            
+            return JsonResponse({"erro": "Usuário inválido"})
+
+    else:
+        return JsonResponse({"erro": "Método de request inválido"})
 
 def apagar_anotacao(request):
     try:

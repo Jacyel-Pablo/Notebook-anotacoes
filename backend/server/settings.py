@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'tokens',
     'anotacao',
     'chatbot_ia',
+    'topicos',
     'corsheaders'
 ]
 
