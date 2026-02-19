@@ -21,68 +21,74 @@ client = OpenAI(
 )
 
 def ia(request):
-    if (request.method == "POST"):
-        jwt_token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
-        mensagem_ia = ""
-
-        corpo = json.loads(request.body.decode("utf-8"))
-        historico_msg = list(reversed(corpo["lista_msg"]))
-        mensagem = corpo["msg"]
-
-        try:
-            jwt_token = jwt.decode(jwt_token, os.getenv("JWT_KEY"), algorithms=["HS256"])
-
-            notebook_usuario.objects.get(id=jwt_token["id"])
-
-            # Configurando a ia para lembrar o hisorico de conversas com o usuário
-            memoria_ia_dados = [
-                {
-                    "role": "system",
-                    "content": os.getenv("CONFIG_IA")
-                },
-            ]
-
-            for i in range(len(historico_msg)):
-                if i <= 4:
-                    memoria_ia_dados.append({"role": "user", "content": historico_msg[i]["mensagem_usuario"]})
-                    memoria_ia_dados.append({"role": "assistant", "content": historico_msg[i]["mensagem_ia"]})
-
-                else:
-                    break
-
-            memoria_ia_dados.append({"role": "user", "content": mensagem})
-
-            # Enviando os dados para ia
-            try:
-                while (len(mensagem_ia) == 0):
-                    completion = client.chat.completions.create(
-                        model=os.getenv("MODELO_IA"),
-                        messages=memoria_ia_dados
-                    )
-
-                    mensagem_ia = completion.choices[0].message.content
-
-                # Cripthogranfando e guadando dados no banco de dados
-                mensagem_usuario = f.encrypt(mensagem.encode("utf-8"))
-                mensagem_usuario = str(mensagem_usuario)[2:len(str(mensagem_usuario)) - 1]
-
-                mensagem_ia_copy = f.encrypt(mensagem_ia.encode("utf-8"))
-                mensagem_ia_copy = str(mensagem_ia_copy)[2:len(str(mensagem_ia_copy)) - 1]
-
-                notebook_mensagens_ia.objects.create(id_usuario=jwt_token["id"], mensagem_usuario=mensagem_usuario, mensagem_ia=mensagem_ia_copy)
-
-                return JsonResponse({"erro": "", "valor": mensagem_ia})
-
-            except Exception as e:
-                print(e)
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar gerar o texto"})
-
-        except Exception as e:
-            print(e)
-            return JsonResponse({"erro": "jwt inválido ou usuário"})
-
-    else:
+    if request.method != "POST":
         return JsonResponse({"erro": "Método inválido"})
+
+    try:
+        # Extração do Token
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+
+        if not auth_header:
+            return JsonResponse({"erro": "Token não fornecido"})
+        
+        jwt_token = auth_header.split(" ")[1]
+        corpo = json.loads(request.body.decode("utf-8"))
+        
+        # O segredo: Pegar apenas os últimos 4 itens da lista original
+        # Se a lista tiver menos de 4, o Python pegará o que estiver disponível.
+        historico_bruto = corpo.get("lista_msg", [])
+        ultimas_mensagens = historico_bruto[-4:] 
+        
+        mensagem_atual = corpo.get("msg")
+
+        # Validação do Token
+        token_decodificado = jwt.decode(jwt_token, os.getenv("JWT_KEY"), algorithms=["HS256"])
+        usuario_id = token_decodificado["id"]
+        notebook_usuario.objects.get(id=usuario_id)
+
+        # Montagem da Memória (System Prompt)
+        memoria_ia_dados = [
+            {"role": "system", "content": os.getenv("CONFIG_IA")}
+        ]
+
+        # Adicionando o histórico selecionado
+        for msg in ultimas_mensagens:
+            memoria_ia_dados.append({"role": "user", "content": msg["mensagem_usuario"]})
+            memoria_ia_dados.append({"role": "assistant", "content": msg["mensagem_ia"]})
+
+        # Adicionando a pergunta atual
+        memoria_ia_dados.append({"role": "user", "content": mensagem_atual})
+
+        # Chamada para OpenRouter
+        completion = client.chat.completions.create(
+            model=os.getenv("MODELO_IA"),
+            messages=memoria_ia_dados
+        )
+        
+        mensagem_ia = completion.choices[0].message.content
+
+        # Criptografia e Salvamento
+        msg_user_enc = f.encrypt(mensagem_atual.encode("utf-8")).decode("utf-8")
+        msg_ia_enc = f.encrypt(mensagem_ia.encode("utf-8")).decode("utf-8")
+
+        numero_mensagem_ia_atual = notebook_mensagens_ia.objects.filter(id_usuario=usuario_id)
+        numero_mensagem_ia_atual = numero_mensagem_ia_atual.count()
+
+        notebook_mensagens_ia.objects.create(
+            id_usuario=usuario_id, 
+            numero_mensagem=numero_mensagem_ia_atual + 1,
+            mensagem_usuario=msg_user_enc, 
+            mensagem_ia=msg_ia_enc
+        )
+
+        return JsonResponse({"erro": "", "valor": mensagem_ia})
+
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({"erro": "Sessão expirada"})
+    
+    except Exception as e:
+        print(f"Erro: {e}")
+        return JsonResponse({"erro": "Ocorreu um erro no processamento"})
     
 def pegar_chats_antigo(request):
     if (request.method == "GET"):
@@ -94,7 +100,7 @@ def pegar_chats_antigo(request):
             notebook_usuario.objects.get(id=jwt_token["id"])
 
             try:
-                dados = notebook_mensagens_ia.objects.filter(id_usuario=jwt_token["id"]).values("mensagem_usuario", "mensagem_ia")
+                dados = notebook_mensagens_ia.objects.filter(id_usuario=jwt_token["id"]).values("mensagem_usuario", "mensagem_ia").order_by("numero_mensagem")
 
                 dados_decrypted = []
 

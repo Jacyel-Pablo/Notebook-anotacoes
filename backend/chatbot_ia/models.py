@@ -6,6 +6,7 @@ import uuid
 class notebook_mensagens_ia(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     id_usuario = models.CharField(max_length=20000, default="")
+    numero_mensagem = models.IntegerField(default="0")
     mensagem_usuario = models.CharField(max_length=20000)
     mensagem_ia = models.CharField(max_length=20000)
 

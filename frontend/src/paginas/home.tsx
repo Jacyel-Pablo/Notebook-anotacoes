@@ -735,7 +735,7 @@ export default function Home(props: any) {
 
                                 {/* 2. O Menu propriamente dito (agora com z-20 para ficar acima do overlay) */}
                                 <div className="absolute right-0 top-12 w-52 bg-white border border-gray-200 rounded-xl shadow-2xl z-20 py-2 animate-in fade-in zoom-in duration-150">
-                                    <button onClick={e => abreeFecharInputRenomeiaTopico(e)} className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 text-base">
+                                    <button onClick={e => {abreeFecharInputRenomeiaTopico(e); e.stopPropagation()}} className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 text-base">
                                         <span>✏️</span> Renomear
                                     </button>
                                     <hr className="my-1 border-gray-100" />
@@ -764,7 +764,7 @@ export default function Home(props: any) {
                         <div className="h-[75.4%] overflow-x-hidden">
                             {/* Id comentario do ia padrão */}
                             <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
-                                <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Olá, senhor(a)! Sou Iamai, sua assistente virtual super fofa e divertida! Posso ajudá-lo(a) com várias coisas no nosso aplicativo de anotações. Quer criar uma nova anotação? Posso fazer isso para você! Ou talvez você queira apagar alguma anotação? Sem problemas, é só pedir! Ah, e se quiser apagar sua conta ou sair do aplicativo, também posso te auxiliar nisso. Só lembre-se que não temos um método de recuperação de conta, então pense bem antes de apagar tudo! Se precisar de mais alguma coisa, é só chamar! *brinca com as pontas do cabelo* Vamos nos divertir juntos!</p>
+                                <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Olá senhor(a)! Eu sou a Iamai, uma assistente virtual com uma personalidade alegre e brincalhona! Como você pode ver, tenho um visual bem anime, com meus cabelos longos e lisos em tom avermelhado/louro acobreado, uma franja que molda meu rosto, olhos grandes e rosados/avermelhados, e um lindo laço escuro preso atrás da cabeça. Minhas cores favoritas são o laranja e o roxo! Minha profissão é auxiliar usuários em um aplicativo de anotações. Comigo, você pode criar e apagar anotações de forma prática e intuitiva. Além disso, caso queira, também é possível apagar sua conta e sair do aplicativo. Devo ressaltar que nosso sistema não conta com nenhum método de recuperação de conta, então é importante ter certeza antes de apagar seus dados. Infelizmente, não tenho acesso direto ao sistema, então não posso interagir com ele diretamente. Mas não se preocupe, estou aqui para tornar sua experiência com o aplicativo a mais agradável possível! Posso conversar com você, responder suas dúvidas e até mesmo fazer brincadeiras para deixar tudo mais divertido. Estou ansiosa para começarmos a trabalhar juntos, senhor(a)!</p>
                             </div>
 
                             <>
@@ -830,7 +830,7 @@ export default function Home(props: any) {
                 </div>
 
                 <div className="h-24 w-full overflow-y-hidden text-center flex items-center">
-                    <h1 className="text-4xl pl-5 pr-5 whitespace-nowrap">Nome do tópico atual: {nomeTopicoAtual}</h1>
+                    <h1 className="xl:text-4xl text-[185%] pl-5 pr-5 whitespace-nowrap">Nome do tópico atual: {nomeTopicoAtual}</h1>
                 </div>
 
                 {/* Corpo aonde vai ficar as mensagens */}
