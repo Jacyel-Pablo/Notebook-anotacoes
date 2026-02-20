@@ -139,7 +139,6 @@ def ia(request):
 
         # Criptografia e Salvamento
         msg_user_enc = f.encrypt(mensagem_atual.encode("utf-8")).decode("utf-8")
-        msg_ia_enc = f.encrypt(mensagem_ia_texto.encode("utf-8")).decode("utf-8")
 
         numero_mensagem_ia_atual = notebook_mensagens_ia.objects.filter(id_usuario=usuario_id)
         numero_mensagem_ia_atual = numero_mensagem_ia_atual.count()
@@ -178,6 +177,8 @@ def ia(request):
                         if (len(mensagem_ia_texto) == 0):
                             mensagem_ia_texto = "Usuário apagador com sucesso senhor(a)"
 
+        # Criptografa a mensagem da ia
+        msg_ia_enc = f.encrypt(mensagem_ia_texto.encode("utf-8")).decode("utf-8")
 
         # Guardando dados no banco
         notebook_mensagens_ia.objects.create(
@@ -186,8 +187,6 @@ def ia(request):
             mensagem_usuario=msg_user_enc, 
             mensagem_ia=msg_ia_enc
         )
-
-        print()
 
         return JsonResponse({"erro": "", "valor": mensagem_ia_texto, "funcao_atual": funcao_atual, "conteudo": conteudo})
 
