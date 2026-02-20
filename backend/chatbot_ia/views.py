@@ -23,6 +23,72 @@ client = OpenAI(
 def ia(request):
     if request.method != "POST":
         return JsonResponse({"erro": "Método inválido"})
+    
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "sair",
+                "description": "Encerra a sessão atual do usuário e sai do app, apagando os tokens de acesso do navegador",
+                "parameters": {
+                    "type": "object",
+                    "properties": {}, # Sem parâmetros necessários para logout
+                    "required": []
+                },
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "criar_anotacao",
+                "description": "Cria uma nova anotação ou nota para o usuário.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "conteudo": {
+                            "type": "string",
+                            "description": "O texto da anotação que o usuário deseja salvar."
+                        },
+                    },
+                    "required": ["conteudo"]
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "criar_topico",
+                "description": "Cria um nome para um novo tópico, onde o usuário pode adicionar novas anotações",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "conteudo": {
+                            "type": "string",
+                            "description": "Você deve colocar o nome do novo tópico de acordo com o tema que o usuário ter solicita"
+                        },
+                    },
+                    "required": ["conteudo"]
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "apagar_conta",
+                "description": "Apagar a conta do usuário definitivamente do servidor sem meios de recuperação",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "conteudo": {
+                            "type": "string",
+                            "description": "Você deve excluir a conta do usuário quando ele solicita mas antés peça uma confirmação pois essa ação não pode se desfeita"
+                        },
+                    },
+                    "required": ["conteudo"]
+                },
+            },
+        }
+    ]
 
     try:
         # Extração do Token
@@ -62,18 +128,58 @@ def ia(request):
         # Chamada para OpenRouter
         completion = client.chat.completions.create(
             model=os.getenv("MODELO_IA"),
-            messages=memoria_ia_dados
+            messages=memoria_ia_dados,
+            tools=tools,
+            tool_choice="auto"
         )
         
-        mensagem_ia = completion.choices[0].message.content
+        response_message = completion.choices[0].message
+        mensagem_ia_texto = response_message.content or "" 
+        funcao_atual = ""
 
         # Criptografia e Salvamento
         msg_user_enc = f.encrypt(mensagem_atual.encode("utf-8")).decode("utf-8")
-        msg_ia_enc = f.encrypt(mensagem_ia.encode("utf-8")).decode("utf-8")
+        msg_ia_enc = f.encrypt(mensagem_ia_texto.encode("utf-8")).decode("utf-8")
 
         numero_mensagem_ia_atual = notebook_mensagens_ia.objects.filter(id_usuario=usuario_id)
         numero_mensagem_ia_atual = numero_mensagem_ia_atual.count()
 
+        funcao_atual = ""
+        conteudo = ""
+
+        # Verifica se a Iamai chamou alguma ferramenta
+        if response_message.tool_calls:
+            for tool_call in response_message.tool_calls:
+                match (tool_call.function.name):
+                    case "sair":
+                        funcao_atual = "sair"
+
+                        if (len(mensagem_ia_texto) == 0):
+                            mensagem_ia_texto = "Sessão fechada com sucesso senhor(a)"
+
+                    case "criar_anotacao":
+                        funcao_atual = "criar_anotacao"
+                        conteudo = json.loads(tool_call.function.arguments)["conteudo"]
+
+                        if (len(mensagem_ia_texto) == 0):
+                            mensagem_ia_texto = "Anotação criada com sucesso senhor(a)"
+
+                    case "criar_topico":
+                        funcao_atual = "criar_topico"
+                        conteudo = json.loads(tool_call.function.arguments)["conteudo"]
+
+                        if (len(mensagem_ia_texto) == 0):
+                            mensagem_ia_texto = "Tópico criado com sucesso senhor(a)"
+
+                    case "apagar_conta":
+                        funcao_atual = "apagar_conta"
+                        conteudo = json.loads(tool_call.function.arguments)["conteudo"]
+
+                        if (len(mensagem_ia_texto) == 0):
+                            mensagem_ia_texto = "Usuário apagador com sucesso senhor(a)"
+
+
+        # Guardando dados no banco
         notebook_mensagens_ia.objects.create(
             id_usuario=usuario_id, 
             numero_mensagem=numero_mensagem_ia_atual + 1,
@@ -81,7 +187,9 @@ def ia(request):
             mensagem_ia=msg_ia_enc
         )
 
-        return JsonResponse({"erro": "", "valor": mensagem_ia})
+        print()
+
+        return JsonResponse({"erro": "", "valor": mensagem_ia_texto, "funcao_atual": funcao_atual, "conteudo": conteudo})
 
     except jwt.ExpiredSignatureError:
         return JsonResponse({"erro": "Sessão expirada"})

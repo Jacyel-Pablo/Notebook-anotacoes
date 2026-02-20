@@ -53,50 +53,95 @@ export default function Home(props: any) {
         location.href = "/"
     }
 
-    async function enviar_anotacao() {
+    async function enviar_anotacao(quem_esta_enviando: string, anotacao_ia: string) {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
-        if (dados.anotacao.length >= 10) {
-            await fetch(`${backend}/anotacao/enviar_anotacao/`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrf_token?.value ?? "",
-                    "Authorization": `Bearer ${token_jwt?.value}`
-                },
-                body: JSON.stringify({
-                    id_topico: idTopicoAtual,
-                    anotacao: dados.anotacao,
-                })
-
-            }).then(res => res.json()).then(res => {
-                if (res["valor"] === true) {
-                    const copy_dados: Anotacoes_list[] = dados.anotacoes_list
-                    copy_dados.push(res["dados"])
-
-                    setDados({
-                        ...dados,
-                        anotacao: "",
-                        anotacoes_list: copy_dados
+        if (quem_esta_enviando === "humano") {
+            if (dados.anotacao.length >= 10) {
+                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrf_token?.value ?? "",
+                        "Authorization": `Bearer ${token_jwt?.value}`
+                    },
+                    body: JSON.stringify({
+                        id_topico: idTopicoAtual,
+                        anotacao: dados.anotacao,
                     })
 
-                } else {
-                    alert(res["erro"])
+                }).then(res => res.json()).then(res => {
+                    if (res["valor"] === true) {
+                        const copy_dados: Anotacoes_list[] = dados.anotacoes_list
+                        copy_dados.push(res["dados"])
 
-                    if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
-                        sair_usuario()
+                        setDados({
+                            ...dados,
+                            anotacao: "",
+                            anotacoes_list: copy_dados
+                        })
+
+                    } else {
+                        alert(res["erro"])
+
+                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                            sair_usuario()
+                        }
                     }
-                }
-            })
+                })
+
+            } else {
+                alert("Sua anotação precisa ter no minimo 10 caracteres")
+                setDados({
+                    ...dados,
+                    anotacao: "",
+                })
+            }
 
         } else {
-            alert("Sua anotação precisa ter no minimo 10 caracteres")
-            setDados({
-                ...dados,
-                anotacao: "",
-            })
+            if (anotacao_ia.length >= 10) {
+                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrf_token?.value ?? "",
+                        "Authorization": `Bearer ${token_jwt?.value}`
+                    },
+                    body: JSON.stringify({
+                        id_topico: idTopicoAtual,
+                        anotacao: anotacao_ia
+                    })
+
+                }).then(res => res.json()).then(res => {
+                    if (res["valor"] === true) {
+                        const copy_dados: Anotacoes_list[] = dados.anotacoes_list
+                        copy_dados.push(res["dados"])
+
+                        setDados({
+                            ...dados,
+                            anotacao: "",
+                            anotacoes_list: copy_dados
+                        })
+
+                    } else {
+                        alert(res["erro"])
+
+                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                            sair_usuario()
+                        }
+                    }
+                })
+
+            } else {
+                alert("Sua anotação precisa ter no minimo 10 caracteres")
+                setDados({
+                    ...dados,
+                    anotacao: "",
+                })
+            }
         }
     }
 
@@ -147,59 +192,12 @@ export default function Home(props: any) {
     const anotacao_element: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null)
 
     // Apagar as anotações ou usuário atual ou então as mensagens do chat de ia
-    async function deletar_anotacao() {
+    async function deletar_anotacao(deletar_user_ia: boolean) {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
         // Se for para apagar a mensagem entrar aqui
-        if (abreFecharJanela.apagar_o_que === "mensagem") {
-            await fetch(`${backend}/anotacao/apagar_anotacao/`, {
-                method: "DELETE",
-                credentials: "include",
-                headers: {
-                    "X-CSRFToken": csrf_token?.value ?? "",
-                    "Authorization": `Bearer ${token_jwt?.value}`
-                },
-                body: JSON.stringify({
-                    id_anotacao: dados.id_anotacao_apagar,
-                })
-
-            }).then(res => res.json()).then(res => {
-                if (res["valor"] === true) {
-                    alert("Mensagem apagadar com sucesso!")
-
-                    // Div 1
-                    anotacao_element.current!.children[0].className = ""
-                    anotacao_element.current!.children[0]!.children[0].className = "text-[0%]"
-                    anotacao_element.current!.children[0]!.children[1].className = "text-[0%]"
-                    
-                    // Div 2
-                    anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
-                    anotacao_element.current!.children[1]!.children[0].className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
-                    anotacao_element.current!.children[1]!.children[0].className = "text-[0%]"
-                    anotacao_element.current = null
-
-                    setDados({
-                        ...dados,
-                        id_anotacao_apagar: ""
-                    })
-
-                } else {
-                    alert(res["erro"])
-
-                    if (res["erro"] === "usuário inválido") {
-                        sair_usuario()
-                    }
-
-                    setDados({
-                        ...dados,
-                        id_anotacao_apagar: ""
-                    })
-                }
-            })
-
-            // Se for para apagar o usuário entrar aqui
-        } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
+        if (deletar_user_ia) {
             await fetch(`${backend}/cadastro/apagar_usuario/`, {
                 method: "DELETE",
                 headers: {
@@ -209,7 +207,6 @@ export default function Home(props: any) {
                 credentials: "include",
 
             }).then(res => res.json()).then(async res => {
-                console.log(res)
                 if (res["erro"].length === 0) {
                     alert("Usuário apagado com sucesso")
                     await cookieStore.delete("jwt")
@@ -221,26 +218,96 @@ export default function Home(props: any) {
                 }
             })
 
-            // Se for para apagar o historico do chat de ia entrar aqui
         } else {
-            await fetch(`${backend}/chatbot_ia/limpar_historico_chat/`, {
-                method: "DELETE",
-                headers: {
-                    "X-CSRFToken": csrf_token?.value ?? "",
-                    "Authorization": `Bearer ${token_jwt?.value}`
-                },
-                credentials: "include"
+            if (abreFecharJanela.apagar_o_que === "mensagem") {
+                await fetch(`${backend}/anotacao/apagar_anotacao/`, {
+                    method: "DELETE",
+                    credentials: "include",
+                    headers: {
+                        "X-CSRFToken": csrf_token?.value ?? "",
+                        "Authorization": `Bearer ${token_jwt?.value}`
+                    },
+                    body: JSON.stringify({
+                        id_anotacao: dados.id_anotacao_apagar,
+                    })
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
-                    alert("Mensagens do chat apagador com sucesso")
+                }).then(res => res.json()).then(res => {
+                    if (res["valor"] === true) {
+                        alert("Mensagem apagadar com sucesso!")
 
-                    setListaMensagensIa([])
+                        // Div 1
+                        anotacao_element.current!.children[0].className = ""
+                        anotacao_element.current!.children[0]!.children[0].className = "text-[0%]"
+                        anotacao_element.current!.children[0]!.children[1].className = "text-[0%]"
+                        
+                        // Div 2
+                        anotacao_element.current!.className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
+                        anotacao_element.current!.children[1]!.children[0].className = "h-[0%] overflow-hidden mt-0 ml-0 text-[0%]"
+                        anotacao_element.current!.children[1]!.children[0].className = "text-[0%]"
+                        anotacao_element.current = null
 
-                } else {
-                    alert(res["erro"])
-                }
-            })
+                        setDados({
+                            ...dados,
+                            id_anotacao_apagar: ""
+                        })
+
+                    } else {
+                        alert(res["erro"])
+
+                        if (res["erro"] === "usuário inválido") {
+                            sair_usuario()
+                        }
+
+                        setDados({
+                            ...dados,
+                            id_anotacao_apagar: ""
+                        })
+                    }
+                })
+
+                // Se for para apagar o usuário entrar aqui
+            } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
+                await fetch(`${backend}/cadastro/apagar_usuario/`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRFToken": csrf_token?.value ?? "",
+                        "Authorization": `Bearer ${token_jwt?.value}`
+                    },
+                    credentials: "include",
+
+                }).then(res => res.json()).then(async res => {
+                    if (res["erro"].length === 0) {
+                        alert("Usuário apagado com sucesso")
+                        await cookieStore.delete("jwt")
+                        await cookieStore.delete("csrftoken")
+                        location.href = "/"
+
+                    } else {
+                        alert(res["erro"])
+                    }
+                })
+
+                // Se for para apagar o historico do chat de ia entrar aqui
+            } else {
+                await fetch(`${backend}/chatbot_ia/limpar_historico_chat/`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRFToken": csrf_token?.value ?? "",
+                        "Authorization": `Bearer ${token_jwt?.value}`
+                    },
+                    credentials: "include"
+
+                }).then(res => res.json()).then(res => {
+                    if (res["erro"].length === 0) {
+                        alert("Mensagens do chat apagador com sucesso")
+
+                        setListaMensagensIa([])
+
+                    } else {
+                        alert(res["erro"])
+                    }
+                })
+            }
         }
     }
 
@@ -281,6 +348,24 @@ export default function Home(props: any) {
 
         }).then(res => res.json()).then(res => {
             if (res["erro"].length === 0) {
+                switch (res["funcao_atual"]) {
+                    case "sair":
+                        sair_usuario()
+                        break
+
+                    case "criar_anotacao":
+                        enviar_anotacao("ia", res["conteudo"])
+                        break
+
+                    case "criar_topico":
+                        criarEnviarTopico(res["conteudo"])
+                        break
+
+                    case "apagar_conta":
+                        deletar_anotacao(true)
+                        break
+                }
+
                 const adicionar_a_lista_mensagem: ListaMensagensIa = {
                     mensagem_usuario: userMensagem.mensagem,
                     mensagem_ia: res["valor"]
@@ -336,40 +421,74 @@ export default function Home(props: any) {
     const [ nomeTopicoAtual, setNomeTopicoAtual ] = useState("Todos")
 
     // Enviar titulo do tópico que foi criado
-    async function criarEnviarTopico() {
+    async function criarEnviarTopico(nome_topico_ia: string) {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
-        await fetch(`${backend}/topicos/criar_topico/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": csrf_token?.value ?? "",
-                "Authorization": `Bearer ${token_jwt?.value}`
-            },
-            credentials: "include",
-            body: JSON.stringify({
-                "topico": criarTopico.topico
-            })
-
-        }).then(res => res.json()).then(res => {
-            if (res["erro"].length === 0) {
-                // alert("Tópico criado com sucesso")
-
-                const lista_topicos = [...listaTopicos]
-                lista_topicos.push({"id": res["valor"].toString(), "nome_topico": criarTopico["topico"]})
-
-                setListaTopicos(lista_topicos)
-
-                setCriarTopico({
-                    ...criarTopico,
-                    abrir: false,
-                    topico: ""
+        if (nome_topico_ia.length === 0) {
+            await fetch(`${backend}/topicos/criar_topico/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    "topico": criarTopico.topico
                 })
 
-            } else {
-                alert(res["erro"])
-            }
-        })
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    // alert("Tópico criado com sucesso")
+
+                    const lista_topicos = [...listaTopicos]
+                    lista_topicos.push({"id": res["valor"].toString(), "nome_topico": criarTopico["topico"]})
+
+                    setListaTopicos(lista_topicos)
+
+                    setCriarTopico({
+                        ...criarTopico,
+                        abrir: false,
+                        topico: ""
+                    })
+
+                } else {
+                    alert(res["erro"])
+                }
+            })
+
+        } else {
+            await fetch(`${backend}/topicos/criar_topico/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrf_token?.value ?? "",
+                    "Authorization": `Bearer ${token_jwt?.value}`
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    "topico": nome_topico_ia
+                })
+
+            }).then(res => res.json()).then(res => {
+                if (res["erro"].length === 0) {
+                    // alert("Tópico criado com sucesso")
+
+                    const lista_topicos = [...listaTopicos]
+                    lista_topicos.push({"id": res["valor"].toString(), "nome_topico": nome_topico_ia})
+
+                    setListaTopicos(lista_topicos)
+
+                    setCriarTopico({
+                        ...criarTopico,
+                        abrir: false,
+                        topico: ""
+                    })
+
+                } else {
+                    alert(res["erro"])
+                }
+            })
+        }
     }
 
     function abreeFecharInputRenomeiaTopico(e: any) {
@@ -665,7 +784,7 @@ export default function Home(props: any) {
 
                     <div className="h-[20%] border-t-2 flex items-center justify-end">
                         <input onClick={() => setCriarTopico({...criarTopico, abrir: false, topico: ""})} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
-                        <input onClick={() => criarEnviarTopico()} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Enviar" />
+                        <input onClick={() => criarEnviarTopico("")} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Enviar" />
                     </div>
                 </div>
             </div>
@@ -684,7 +803,7 @@ export default function Home(props: any) {
                             <p>Remover <br /> fundo</p>
                         </button> */}
                         <input onClick={e => abre_fechar(e, "")} className="h-14 w-24 rounded-2xl border-2 mr-5 hover:bg-gray-200 active:bg-gray-200" id="aberto" type="button" value="Cancelar" />
-                        <input onClick={e => { deletar_anotacao(); abre_fechar(e, "") }} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
+                        <input onClick={e => { deletar_anotacao(false); abre_fechar(e, "") }} className="h-14 w-24 rounded-2xl border-2 border-black xl:mr-10 mr-6 text-white bg-red-800 hover:bg-red-600 active:bg-red-600" id="aberto" type="button" value="Excluir" />
                     </div>
                 </div>
             </div>
@@ -816,7 +935,7 @@ export default function Home(props: any) {
                 <div className="h-10 xl:mt-5 mt-0 flex z-10">
                     <input onChange={e => pega_dados(e)} className="h-20 w-[75%] ml-4 border-b-2 p-2 lg:text-4xl text-[140%] outline-none" id="anotacao" value={dados.anotacao} placeholder="Insira uma anotação" type="text" />
 
-                    <input onClick={() => enviar_anotacao()} className="h-16 w-40 mt-2 ml-2 border-2 rounded-4xl text-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Enviar" />
+                    <input onClick={() => enviar_anotacao("humano", "")} className="h-16 w-40 mt-2 ml-2 border-2 rounded-4xl text-3xl text-white hover:text-gray-200 border-black bg-orange-800 hover:bg-amber-950 active:bg-amber-950" type="button" value="Enviar" />
                 </div>
 
                 {/* Botões sair, apagar conta e criar tópico da versão mobile */}
@@ -839,7 +958,7 @@ export default function Home(props: any) {
                     {dados.anotacoes_list.map((value, i) => {
                         return (
                             <div key={i}>
-                                <div className={`h-80 w-[75%] ml-12 mt-4 rounded-3xl ${i === dados.anotacoes_list.length - 1 ? "mb-28" : ""} overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
+                                <div className={`h-80 w-[75%] ml-12 mt-4 m rounded-3xl ${i === dados.anotacoes_list.length - 1 ? "xl:mb-[33%] mb-[40%]" : ""} overflow-x-auto bg-[url(./assets/Folhas-de-anotacoes.jpg)] bg-cover bg-no-repeat`}>
                                     {/* Div 1 */}
                                     <div className="h-16 flex items-center justify-end">
                                         {/* Pegando a data e colocando ela em dia mes e ano */}
