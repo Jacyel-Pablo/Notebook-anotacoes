@@ -347,7 +347,7 @@ export default function Home(props: any) {
             body: JSON.stringify({ "lista_msg": listaMensagensIa, "msg": userMensagem.mensagem })
 
         }).then(res => res.json()).then(res => {
-            if (res["erro"].length === 0) {
+            if (res["erro"].length === 0 && res["valor"].length > 0) {
                 switch (res["funcao_atual"]) {
                     case "sair":
                         sair_usuario()

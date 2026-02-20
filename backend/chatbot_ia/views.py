@@ -177,6 +177,10 @@ def ia(request):
                         if (len(mensagem_ia_texto) == 0):
                             mensagem_ia_texto = "Usuário apagador com sucesso senhor(a)"
 
+        # Force um fallback caso tudo falhe
+        if len(mensagem_ia_texto) == 0:
+            mensagem_ia_texto = "Ocorreu um erro"
+
         # Criptografa a mensagem da ia
         msg_ia_enc = f.encrypt(mensagem_ia_texto.encode("utf-8")).decode("utf-8")
 
