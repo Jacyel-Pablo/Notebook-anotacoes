@@ -148,6 +148,9 @@ def ia(request):
 
         # Verifica se a Iamai chamou alguma ferramenta
         if response_message.tool_calls:
+            # Adicionamos a intenção da IA na memória isso é usar uma ferramenta
+            memoria_ia_dados.append(response_message)
+
             for tool_call in response_message.tool_calls:
                 match (tool_call.function.name):
                     case "sair":
@@ -177,6 +180,26 @@ def ia(request):
                         if (len(mensagem_ia_texto) == 0):
                             mensagem_ia_texto = "Usuário apagador com sucesso senhor(a)"
 
+                # Definimos o que o SISTEMA vai dizer para a IA
+                resultado_sistema = f"Tarefa '{tool_call.function.name}' executada com sucesso."
+
+                # Adicionamos a resposta da ferramenta na memória
+                memoria_ia_dados.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "content": resultado_sistema
+                })
+
+                # SEGUNDA CHAMADA: A IA agora comenta a mudança
+                segunda_completion = client.chat.completions.create(
+                    model=os.getenv("MODELO_IA"),
+                    messages=memoria_ia_dados
+                )
+
+                # Pegar a mensagem da IA
+                mensagem_ia_texto = segunda_completion.choices[0].message.content
+                
         # Force um fallback caso tudo falhe
         if len(mensagem_ia_texto) == 0:
             mensagem_ia_texto = "Ocorreu um erro"
@@ -192,14 +215,24 @@ def ia(request):
             mensagem_ia=msg_ia_enc
         )
 
-        return JsonResponse({"erro": "", "valor": mensagem_ia_texto, "funcao_atual": funcao_atual, "conteudo": conteudo})
+        res = JsonResponse({"erro": "", "valor": mensagem_ia_texto, "funcao_atual": funcao_atual, "conteudo": conteudo})
+        res.status_code = 200
+
+        return res
 
     except jwt.ExpiredSignatureError:
+        res = JsonResponse({"erro": "Sessão expirada"})
+        res.status_code = 401
+
         return JsonResponse({"erro": "Sessão expirada"})
     
     except Exception as e:
         print(f"Erro: {e}")
-        return JsonResponse({"erro": "Ocorreu um erro no processamento"})
+
+        res = JsonResponse({"erro": "Ocorreu um erro no processamento"})
+        res.status_code = 500
+
+        return res
     
 def pegar_chats_antigo(request):
     if (request.method == "GET"):
@@ -227,18 +260,28 @@ def pegar_chats_antigo(request):
 
                     dados_decrypted.append({"mensagem_usuario": mensagem_usuario, "mensagem_ia": mensagem_ia})
 
-                return JsonResponse({"erro": "", "valor": dados_decrypted})
+                res = JsonResponse({"erro": "", "valor": dados_decrypted})
+                res.status_code = 200
+                return res
 
             except Exception as e:
                 print(e)
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar pegar as mensagens"})
+
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar pegar as mensagens"})
+                res.status_code = 500
+                return
 
         except Exception as e:
             print(e)
-            return JsonResponse({"erro": "jwt inválido ou usuário"})
+
+            res = JsonResponse({"erro": "jwt inválido ou usuário"})
+            res.status_code = 401
+            return res
 
     else:
-        return JsonResponse({"erro": "Método inválido"})
+        res = JsonResponse({"erro": "Método inválido"})
+        res.status_code = 405
+        return res
     
 def limpar_historico_chat(request):
     if (request.method == "DELETE"):
@@ -252,15 +295,29 @@ def limpar_historico_chat(request):
             try:
                 notebook_mensagens_ia.objects.filter(id_usuario=jwt_token["id"]).delete()
 
-                return JsonResponse({"erro": ""})
+                res = JsonResponse({"erro": ""})
+                res.status_code = 200
+
+                return res
 
             except Exception as e:
                 print(e)
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar apagar o histórico"})
+
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar apagar o histórico"})
+                res.status_code = 500
+
+                return res
 
         except Exception as e:
             print(e)
-            return JsonResponse({"erro": "jwt inválido ou usuário"})
+
+            res = JsonResponse({"erro": "jwt inválido ou usuário"})
+            res.status_code = 401
+
+            return res
 
     else:
-        return JsonResponse({"erro": "Método inválido"})
+        res = JsonResponse({"erro": "Método inválido"})
+        res.status_code = 405
+
+        return res

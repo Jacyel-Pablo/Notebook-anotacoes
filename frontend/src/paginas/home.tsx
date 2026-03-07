@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react"
+import icone_iamai from "../assets/Iamai.png"
 
 export default function Home(props: any) {
     const backend = props.backend
@@ -59,7 +60,8 @@ export default function Home(props: any) {
 
         if (quem_esta_enviando === "humano") {
             if (dados.anotacao.length >= 10) {
-                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
+
+                const enviar_anotacao_response = fetch(`${backend}/anotacao/enviar_anotacao/`, {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -72,10 +74,15 @@ export default function Home(props: any) {
                         anotacao: dados.anotacao,
                     })
 
-                }).then(res => res.json()).then(res => {
-                    if (res["valor"] === true) {
+                })
+                
+                enviar_anotacao_response.then(async res => {
+
+                    const res_json = await res.json()
+
+                    if (res.status === 201) {
                         const copy_dados: Anotacoes_list[] = dados.anotacoes_list
-                        copy_dados.push(res["dados"])
+                        copy_dados.push(res_json["dados"])
 
                         setDados({
                             ...dados,
@@ -84,9 +91,9 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res["erro"])
+                        alert(res_json["erro"])
 
-                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                        if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
                         }
                     }
@@ -102,7 +109,7 @@ export default function Home(props: any) {
 
         } else {
             if (anotacao_ia.length >= 10) {
-                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
+                const enviar_anotacao_response = fetch(`${backend}/anotacao/enviar_anotacao/`, {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -115,10 +122,15 @@ export default function Home(props: any) {
                         anotacao: anotacao_ia
                     })
 
-                }).then(res => res.json()).then(res => {
-                    if (res["valor"] === true) {
+                })
+
+                enviar_anotacao_response.then(async res => {
+
+                    const res_json = await res.json()
+
+                    if (res.status === 201) {
                         const copy_dados: Anotacoes_list[] = dados.anotacoes_list
-                        copy_dados.push(res["dados"])
+                        copy_dados.push(res_json["dados"])
 
                         setDados({
                             ...dados,
@@ -127,9 +139,9 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res["erro"])
+                        alert(res_json["erro"])
 
-                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                        if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
                         }
                     }
@@ -196,9 +208,8 @@ export default function Home(props: any) {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
 
-        // Se for para apagar a mensagem entrar aqui
         if (deletar_user_ia) {
-            await fetch(`${backend}/cadastro/apagar_usuario/`, {
+            const apagar_usuario_response = fetch(`${backend}/cadastro/apagar_usuario/`, {
                 method: "DELETE",
                 headers: {
                     "X-CSRFToken": csrf_token?.value ?? "",
@@ -206,19 +217,25 @@ export default function Home(props: any) {
                 },
                 credentials: "include",
 
-            }).then(res => res.json()).then(async res => {
-                if (res["erro"].length === 0) {
+            })
+
+            apagar_usuario_response.then(async res => {
+
+                const res_json = await res.json()
+
+                if (res.status === 201) {
                     alert("Usuário apagado com sucesso")
                     await cookieStore.delete("jwt")
                     await cookieStore.delete("csrftoken")
                     location.href = "/"
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
             })
 
         } else {
+            // Se for para apagar a mensagem entrar aqui
             if (abreFecharJanela.apagar_o_que === "mensagem") {
                 await fetch(`${backend}/anotacao/apagar_anotacao/`, {
                     method: "DELETE",
@@ -231,8 +248,11 @@ export default function Home(props: any) {
                         id_anotacao: dados.id_anotacao_apagar,
                     })
 
-                }).then(res => res.json()).then(res => {
-                    if (res["valor"] === true) {
+                }).then(async res => {
+
+                    const res_json = await res.json()
+
+                    if (res.status === 200) {
                         alert("Mensagem apagadar com sucesso!")
 
                         // Div 1
@@ -252,9 +272,9 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res["erro"])
+                        alert(res_json["erro"])
 
-                        if (res["erro"] === "usuário inválido") {
+                        if (res_json["erro"] === "usuário inválido") {
                             sair_usuario()
                         }
 
@@ -267,7 +287,8 @@ export default function Home(props: any) {
 
                 // Se for para apagar o usuário entrar aqui
             } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
-                await fetch(`${backend}/cadastro/apagar_usuario/`, {
+
+                const apagar_usuario_response = fetch(`${backend}/cadastro/apagar_usuario/`, {
                     method: "DELETE",
                     headers: {
                         "X-CSRFToken": csrf_token?.value ?? "",
@@ -275,15 +296,20 @@ export default function Home(props: any) {
                     },
                     credentials: "include",
 
-                }).then(res => res.json()).then(async res => {
-                    if (res["erro"].length === 0) {
+                })
+
+                apagar_usuario_response.then(async res => {
+
+                    const res_json = await res.json()
+
+                    if (res.status === 201) {
                         alert("Usuário apagado com sucesso")
                         await cookieStore.delete("jwt")
                         await cookieStore.delete("csrftoken")
                         location.href = "/"
 
                     } else {
-                        alert(res["erro"])
+                        alert(res_json["erro"])
                     }
                 })
 
@@ -297,14 +323,16 @@ export default function Home(props: any) {
                     },
                     credentials: "include"
 
-                }).then(res => res.json()).then(res => {
-                    if (res["erro"].length === 0) {
+                }).then(async res => {
+                    const res_json = await res.json()
+
+                    if (res.status === 200) {
                         alert("Mensagens do chat apagador com sucesso")
 
                         setListaMensagensIa([])
 
                     } else {
-                        alert(res["erro"])
+                        alert(res_json["erro"])
                     }
                 })
             }
@@ -346,19 +374,21 @@ export default function Home(props: any) {
             credentials: "include",
             body: JSON.stringify({ "lista_msg": listaMensagensIa, "msg": userMensagem.mensagem })
 
-        }).then(res => res.json()).then(res => {
-            if (res["erro"].length === 0 && res["valor"].length > 0) {
-                switch (res["funcao_atual"]) {
+        }).then(async res => {
+            const res_json = await res.json()
+
+            if (res.status === 200) {
+                switch (res_json["funcao_atual"]) {
                     case "sair":
                         sair_usuario()
                         break
 
                     case "criar_anotacao":
-                        enviar_anotacao("ia", res["conteudo"])
+                        enviar_anotacao("ia", res_json["conteudo"])
                         break
 
                     case "criar_topico":
-                        criarEnviarTopico(res["conteudo"])
+                        criarEnviarTopico(res_json["conteudo"])
                         break
 
                     case "apagar_conta":
@@ -368,7 +398,7 @@ export default function Home(props: any) {
 
                 const adicionar_a_lista_mensagem: ListaMensagensIa = {
                     mensagem_usuario: userMensagem.mensagem,
-                    mensagem_ia: res["valor"]
+                    mensagem_ia: res_json["valor"]
                 }
 
                 setListaMensagensIa(prev => [
@@ -377,7 +407,7 @@ export default function Home(props: any) {
                 ])
 
             } else {
-                alert(res["erro"])
+                alert(res_json["erro"])
             }
 
             setUserMensagem({
@@ -437,12 +467,15 @@ export default function Home(props: any) {
                     "topico": criarTopico.topico
                 })
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
+            }).then(async res => {
+
+                const res_json = await res.json()
+
+                if (res.status === 201) {
                     // alert("Tópico criado com sucesso")
 
                     const lista_topicos = [...listaTopicos]
-                    lista_topicos.push({"id": res["valor"].toString(), "nome_topico": criarTopico["topico"]})
+                    lista_topicos.push({"id": res_json["valor"].toString(), "nome_topico": criarTopico["topico"]})
 
                     setListaTopicos(lista_topicos)
 
@@ -453,7 +486,7 @@ export default function Home(props: any) {
                     })
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
             })
 
@@ -469,12 +502,15 @@ export default function Home(props: any) {
                     "topico": nome_topico_ia
                 })
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
+            }).then(async res => {
+
+                const res_json = await res.json()
+
+                if (res.status === 201) {
                     // alert("Tópico criado com sucesso")
 
                     const lista_topicos = [...listaTopicos]
-                    lista_topicos.push({"id": res["valor"].toString(), "nome_topico": nome_topico_ia})
+                    lista_topicos.push({"id": res_json["valor"].toString(), "nome_topico": nome_topico_ia})
 
                     setListaTopicos(lista_topicos)
 
@@ -485,7 +521,7 @@ export default function Home(props: any) {
                     })
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
             })
         }
@@ -541,8 +577,10 @@ export default function Home(props: any) {
                     novo_nome: e.target.value
                 })
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
+            }).then(async res => {
+                const res_json = await res.json()
+
+                if (res.status === 200) {
                     e.target!.parentElement!.children[2].textContent = e.target.value
 
                     e.target!.parentElement!.children[1]
@@ -559,7 +597,7 @@ export default function Home(props: any) {
                     e.target!.parentElement!.children[0].className = "h-0 w-0 text-[0%]"
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
             })
         }
@@ -577,12 +615,13 @@ export default function Home(props: any) {
                     "Authorization": `Bearer ${token_jwt?.value}`
                 }
 
-            }).then(res => res.json()).then(async res => {
-                if (res["valor"] === true) {
-                    console.log(res["dados"])
+            }).then(async res => {
+                const res_json = await res.json()
+
+                if (res.status === 200) {
                     setDados({
                         ...dados,
-                        anotacoes_list: res["dados"],
+                        anotacoes_list: res_json["dados"],
                     })
 
                     // Pegando e colocando textos do usuario e da ia no frontend
@@ -594,20 +633,22 @@ export default function Home(props: any) {
                         },
                         credentials: "include"
 
-                    }).then(res => res.json()).then(res => {
-                        if (res["erro"].length === 0) {
-                            setListaMensagensIa(res["valor"])
+                    }).then(async res => {
+                        const res_json = await res.json()
+
+                        if (res.status === 200) {
+                            setListaMensagensIa(res_json["valor"])
 
                         } else {
-                            alert(res["erro"])
+                            alert(res_json["erro"])
                         }
                     })
 
                 } else {
-                    if (res["erro"] != undefined) {
-                        alert(res["erro"])
+                    if (res_json["erro"] != undefined) {
+                        alert(res_json["erro"])
 
-                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                        if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
                         }
                     }
@@ -622,15 +663,17 @@ export default function Home(props: any) {
                 },
                 credentials: "include",
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
+            }).then(async res => {
+                const res_json = await res.json()
+
+                if (res.status === 200) {
                     setDados({
                         ...dados,
-                        anotacoes_list: res["valor"]
+                        anotacoes_list: res_json["valor"]
                     })                
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
 
             })
@@ -664,8 +707,10 @@ export default function Home(props: any) {
                 id_topico: idTopico
             })
 
-        }).then(res => res.json()).then(res => {
-            if (res["erro"].length === 0) {
+        }).then(async res => {
+            const res_json = await res.json()
+
+            if (res.status === 200) {
                 // Tirando da tela a div de tópicos
                 divTopico.className = "h-[0%] w-[0%]"
 
@@ -681,7 +726,7 @@ export default function Home(props: any) {
                 alert("topico apagado com sucesso")
 
             } else {
-                alert(res["erro"])
+                alert(res_json["erro"])
             }
 
         })
@@ -710,12 +755,13 @@ export default function Home(props: any) {
                     "Authorization": `Bearer ${token_jwt?.value}`
                 }
 
-            }).then(res => res.json()).then(async res => {
-                if (res["valor"] === true) {
-                    console.log(res["dados"])
+            }).then(async res => {
+                const res_json = await res.json()
+
+                if (res.status === 200) {
                     setDados({
                         ...dados,
-                        anotacoes_list: res["dados"],
+                        anotacoes_list: res_json["dados"],
                     })
 
                     // Pegando e colocando textos do usuario e da ia no frontend
@@ -727,20 +773,22 @@ export default function Home(props: any) {
                         },
                         credentials: "include"
 
-                    }).then(res => res.json()).then(res => {
-                        if (res["erro"].length === 0) {
-                            setListaMensagensIa(res["valor"])
+                    }).then(async res => {
+                        const res_json = await res.json()
+
+                        if (res.status === 200) {
+                            setListaMensagensIa(res_json["valor"])
 
                         } else {
-                            alert(res["erro"])
+                            alert(res_json["erro"])
                         }
                     })
 
                 } else {
-                    if (res["erro"] != undefined) {
-                        alert(res["erro"])
+                    if (res_json["erro"] != undefined) {
+                        alert(res_json["erro"])
 
-                        if (res["erro"] === "Ocorreu um erro o token de login e inválido" || res["erro"] === "usuário inválido") {
+                        if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
                         }
                     }
@@ -755,12 +803,14 @@ export default function Home(props: any) {
                     "Authorization": `Bearer ${token_jwt?.value}`
                 }
 
-            }).then(res => res.json()).then(res => {
-                if (res["erro"].length === 0) {
-                    setListaTopicos(res["valor"])
+            }).then(async res => {
+                const res_json = await res.json()
+
+                if (res.status === 200) {
+                    setListaTopicos(res_json["valor"])
 
                 } else {
-                    alert(res["erro"])
+                    alert(res_json["erro"])
                 }
             })
         }
@@ -876,7 +926,7 @@ export default function Home(props: any) {
                 <div className={`fixed bottom-[6dvh] ml-[5%] xl:w-[30%] w-[90%] bg-orange-400 rounded-3xl transition-all duration-200 ease-in-out ${aberta ? "h-[80%]" : "h-[5%]"}`}>
                     <div onClick={e => e.stopPropagation()} className={`bg-white rounded-t-3xl ${aberta ? "h-[83%]" : "h-0"} cursor-default`}>
                         <nav className="h-[15%] flex items-center rounded-t-3xl bg-orange-400">
-                            <img className="h-[80%] xl:w-[15.7%] w-[18%] xl:ml-15 ml-6 rounded-full" src="https://raw.githubusercontent.com/Jacyel-Pablo/Iamai/refs/heads/main/Meu%20Projeto/Iamai(1).png" alt="Avatar Iamai" />
+                            <img className="h-[80%] xl:w-[15.7%] w-[18%] xl:ml-15 ml-6 rounded-full" src={icone_iamai} alt="Avatar Iamai" />
                             <h1 className={`ml-5 ${aberta ? "text-4xl" : "text-[0%]"}`}>Iamai</h1>
                         </nav>
 

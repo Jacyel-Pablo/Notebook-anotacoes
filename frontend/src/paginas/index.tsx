@@ -21,48 +21,64 @@ export default function Index(props:any)
 
     function enviar_dados()
     {
-        fetch(`${backend}/login/login/`, {
+        // Metódo para validar se email e senha do usuário são validos
+        const response = fetch(`${backend}/login/login/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(dados)
+        })
 
-        }).then(res => res.json()).then(res => {
-            if (res["valor"].length != 0) {
-                fetch(`${backend}/tokens/csrf_token/`, {credentials: "include"}).then(res1 => res1.json()).then(res1 => {
-                    if (res1["valor"].length != 0) {
+        const csrf_token_res = fetch(`${backend}/tokens/csrf_token/`, {credentials: "include"})
+
+        response.then(async res => {
+            if (res.status === 200) {
+                csrf_token_res.then(async res1 => {
+
+                    const response_ = await res1.json()
+
+                    if (res1.status === 200) {
 
                         // Pegando o id do usuario para colocar no jwt
-                        const id = res["valor"]
+                        let id = await res.json()
+                        id = id["valor"] 
 
-                        fetch(`${backend}/tokens/jwt/?id=${id}`, {
+                        const jwt_response = fetch(`${backend}/tokens/jwt/?id=${id}`, {
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRFToken": csrf_token ?? "",
                             },
                             credentials: "include"
 
-                        }).then(jwt => jwt.json()).then(async jwt => {
-                            if (jwt["valor"].length > 0) {
-                                await cookieStore.set("csrftoken", res1["valor"])
-                                await cookieStore.set("jwt", jwt["valor"])
+                        })
+
+                        jwt_response.then(async jwt => {
+                            
+                            const json_jwt = await jwt.json() 
+
+                            if (jwt.status === 200) {
+                                await cookieStore.set("csrftoken", response_["valor"])
+                                await cookieStore.set("jwt", json_jwt["valor"])
                                 location.href = "/home"
 
                             } else {
-                                alert(jwt["erro"])
+                                alert(json_jwt["erro"])
                             }
                         })
 
                     } else {
-                        alert(res1["erro"])
+                        alert(response_["erro"])
                     }
                 })
 
             } else {
-                alert(res["erro"])
+                const erro = await res.json()
+
+                alert(erro["erro"])
             }
         })
+
     }
 
     return (

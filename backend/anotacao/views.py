@@ -34,7 +34,10 @@ def enviar_anotacao(request):
                 except Exception as e:
                     print(e)
 
-                    return JsonResponse({"erro": "Ocorreu um erro inésperado"})
+                    res = JsonResponse({"erro": "Ocorreu um erro inésperado"})
+                    res.status_code = 500
+
+                    return res
 
             try:
                 if request.method == "POST":
@@ -65,26 +68,47 @@ def enviar_anotacao(request):
                         # # Adicionado dado a uma lista
                         dados_anotacao = {"id": db_anotacaoes.id, "anotacao": descript, "data": db_anotacaoes.data}
                         
-                        return JsonResponse({"valor": True, "dados": dados_anotacao})
+                        res = JsonResponse({"valor": True, "dados": dados_anotacao})
+                        res.status_code = 201
+
+                        return res
 
                     except Exception as e:
                         print(e)
 
-                        return JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar criar uma anotação"})
+                        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar criar uma anotação"})
+                        res.status_code = 500
 
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar enviar a anotação"})
+                        return res
+                    
+                res = JsonResponse({"valor": "", "erro": "Ocorreu um erro ao tentar enviar a anotação"})
+                res.status_code = 400
+
+                return res
             
             except Exception as e:
                 print(e)
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado ao tentar enviar a anotação"})
+
+                res = JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado ao tentar enviar a anotação"})
+                res.status_code = 500
+
+                return res
             
         except Exception as e:
             print(e)
-            return JsonResponse({"valor": "", "erro": "usuário inválido"})
+
+            res = JsonResponse({"valor": "", "erro": "usuário inválido"})
+            res.status_code = 400
+
+            return res
 
     except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+        res.status_code = 401
+
+        return res
 
 def pegar_anotacao(request):
     try:
@@ -106,19 +130,30 @@ def pegar_anotacao(request):
 
                     dados_anotacao.append({"id": i.id, "anotacao": descript, "data": i.data})
 
-                return JsonResponse({"valor": True, "dados": dados_anotacao})
+                res = JsonResponse({"valor": True, "dados": dados_anotacao})
+                res.status_code = 200
+                return res
                 
             except Exception as e:
                 print(e)
-                return JsonResponse({"valor": "", "erro": "Ocorreu um erro no sistema"})
+
+                res = JsonResponse({"valor": "", "erro": "Ocorreu um erro no sistema"})
+                res.status_code = 500
+                return res
         
         except Exception as e:
             print(e)
-            return JsonResponse({"valor": "", "erro": "Ocorreu um erro a tentar pegar as anotações"})
+            
+            res = JsonResponse({"valor": "", "erro": "Ocorreu um erro a tentar pegar as anotações"})
+            res.status_code = 500
+            return res
 
     except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+        res.status_code = 401
+        return res
 
 def pegar_topico_anotacao(request):
     if request.method == "GET":
@@ -144,20 +179,28 @@ def pegar_topico_anotacao(request):
 
                     dados_anotacao.append({"id": i.id, "anotacao": descript, "data": i.data})
 
-                return JsonResponse({"erro": "", "valor": dados_anotacao})
+                res = JsonResponse({"erro": "", "valor": dados_anotacao})
+                res.status_code = 200
+                return res
 
             except Exception as e:
                 print(e)
 
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar pegar as mensagens"})
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar pegar as mensagens"})
+                res.status_code = 500
+                return res
 
         except Exception as e:
             print(e)
-            
-            return JsonResponse({"erro": "Usuário inválido"})
+
+            res = JsonResponse({"erro": "Usuário inválido"})
+            res.status_code = 401
+            return res
 
     else:
-        return JsonResponse({"erro": "Método de request inválido"})
+        res = JsonResponse({"erro": "Método de request inválido"})
+        res.status_code = 405
+        return res
 
 def apagar_anotacao(request):
     try:
@@ -168,14 +211,28 @@ def apagar_anotacao(request):
                 id = dados["id_anotacao"]
                 notebook_anotacoes.objects.filter(id=id).delete()
 
-                return JsonResponse({"valor": True})
+                res = JsonResponse({"valor": True})
+                res.status_code = 200
 
-            return JsonResponse({"valor": "", "erro": "Ocorreu um erro metódo utilizdado está incorreto"})
+                return res
+            
+            res = JsonResponse({"valor": "", "erro": "Ocorreu um erro metódo utilizdado está incorreto"})
+            res.status_code = 400
+
+            return res
         
         except Exception as e:
             print(e)
-            return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado"})
+
+            res = JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado"})
+            res.status_code = 500
+
+            return res
 
     except InvalidIssuerError as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro o token de login e inválido"})
+        res.status_code = 401
+
+        return res

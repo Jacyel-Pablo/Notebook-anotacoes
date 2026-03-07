@@ -27,27 +27,30 @@ function Protecao()
     const jwt = await cookieStore.get("jwt")
     
     if (jwt?.value != undefined) {
-      fetch(`${backend}/tokens/validar_jwt/`, {
+      const validar_jwt = fetch(`${backend}/tokens/validar_jwt/`, {
         headers: {
           "Authorization": `Bearer ${jwt?.value}`
         }
+      })
 
-      }).then(res => res.json()).then(res => {
+      validar_jwt.then(async res => {
+        const validar_jwt_res = await res.json()
+        
+        if (res.status === 200) {
+          switch (validar_jwt_res) {
+            case true:
+                setPag(protecao_list[location.pathname])
+                break
+                
+            case false:
+              cookieStore.delete("csrf_token")
+              cookieStore.delete("email")
+              cookieStore.delete("jwt")
 
-        switch (res) {
-          case true:
-            setPag(protecao_list[location.pathname])
-            break
-            
-          case false:
-            cookieStore.delete("csrf_token")
-            cookieStore.delete("email")
-            cookieStore.delete("jwt")
-
-            location.href = "/"
-            break
+              location.href = "/"
+              break
+          }
         }
-
       })
 
     } else {

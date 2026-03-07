@@ -23,38 +23,59 @@ def criarTopico(request):
                 topico = corpo["topico"]
 
                 if len(topico) < 5:
-                    return JsonResponse({"erro": "O tópico precisa ter no minimo 5 caracteres"})
+                    res = JsonResponse({"erro": "O tópico precisa ter no minimo 5 caracteres"})
+                    res.status_code = 400
+
+                    return res
 
                 topico = f.encrypt(topico.encode("utf-8"))
                 topico = str(topico)[2:len(str(topico)) - 1]
 
                 if len(topico) >= 2000:
-                    return JsonResponse({"erro": "A quantidade de caracteres e muito grande, tente escrever um tópico menor"})
+                    res = JsonResponse({"erro": "A quantidade de caracteres e muito grande, tente escrever um tópico menor"})
+                    res.status_code = 400
+
+                    return res
                 
                 try:
                     usuario = notebook_usuario.objects.get(id=jwt_token["id"])
 
                     topico_gerado = notebook_topicos.objects.create(id_usuario=usuario, nome_topico=topico)
 
-                    return JsonResponse({"erro": "", "valor": topico_gerado.id})
+                    res = JsonResponse({"erro": "", "valor": topico_gerado.id})
+                    res.status_code = 201
+
+                    return res
 
                 except Exception as e:
                     print(e)
 
-                    return JsonResponse({"erro": "Ocorreu um erro ao tentar criar um tópico"})
+                    res = JsonResponse({"erro": "Ocorreu um erro ao tentar criar um tópico"})
+                    res.status_code = 500
+
+                    return res
 
             except Exception as e:
                 print(e)
 
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar pegar o tópico enviado"})
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar pegar o tópico enviado"})
+                res.status_code = 400
+
+                return res
 
         except Exception as e:
             print(e)
+
+            res = JsonResponse({"erro": "Usuário inválido"})
+            res.status_code = 401
             
-            return JsonResponse({"erro": "Usuário inválido"})
+            return res
 
     else:
-        return JsonResponse({"erro": "Método de request inválido"})
+        res = JsonResponse({"erro": "Método de request inválido"})
+        res.status_code = 405
+
+        return res
     
 def pegarTopicos(request):
     if request.method == "GET":
@@ -70,20 +91,28 @@ def pegarTopicos(request):
                 for i in range(len(topicos)):
                     topicos[i]["nome_topico"] = f.decrypt(topicos[i]["nome_topico"]).decode("utf-8")
 
-                return JsonResponse({"erro": "", "valor": list(topicos)})
+                res = JsonResponse({"erro": "", "valor": list(topicos)})
+                res.status_code = 200
+                return res
 
             except Exception as e:
                 print(e)
 
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar lista os tópicos"})
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar lista os tópicos"})
+                res.status_code = 500
+                return res
 
         except Exception as e:
             print(e)
             
-            return JsonResponse({"erro": "Usuário inválido"})
+            res = JsonResponse({"erro": "Usuário inválido"})
+            res.status_code = 401
+            return res
 
     else:
-        return JsonResponse({"erro": "Método de request inválido"})
+        res = JsonResponse({"erro": "Método de request inválido"})
+        res.status_code = 405
+        return 
     
 def apagarTopico(request):
     if request.method == "DELETE":
@@ -104,20 +133,28 @@ def apagarTopico(request):
                 # Apagar o tópico em sí
                 notebook_topicos.objects.filter(id=idTopico, id_usuario=usuario).delete()
 
-                return JsonResponse({"erro": ""})
+                res = JsonResponse({"erro": ""})
+                res.status_code = 200
+                return res
 
             except Exception as e:
                 print(e)
 
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar apagar o tópicos especificado"})
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar apagar o tópicos especificado"})
+                res.status_code = 500
+                return res
 
         except Exception as e:
             print(e)
             
-            return JsonResponse({"erro": "Usuário inválido"})
+            res = JsonResponse({"erro": "Usuário inválido"})
+            res.status_code = 401
+            return res
 
     else:
-        return JsonResponse({"erro": "Método de request inválido"})
+        res = JsonResponse({"erro": "Método de request inválido"})
+        res.status_code = 405
+        return 
     
 def atualizarTopico(request):
     if request.method == "PATCH":
@@ -132,7 +169,10 @@ def atualizarTopico(request):
                 novoNome = corpo["novo_nome"]
                 
                 if len(novoNome) < 5:
-                    return JsonResponse({"erro": "O novo nome precisa ter no minimo 5 caracteres"})
+                    res = JsonResponse({"erro": "O novo nome precisa ter no minimo 5 caracteres"})
+                    res.status_code = 500
+
+                    return res
 
                 novoNomeEncrypt = f.encrypt(novoNome.encode("utf-8"))
                 novoNomeEncrypt = str(novoNomeEncrypt)[2:len(str(novoNomeEncrypt)) - 1]
@@ -141,17 +181,25 @@ def atualizarTopico(request):
                 topico.nome_topico = novoNomeEncrypt
                 topico.save()
 
-                return JsonResponse({"erro": ""})
+                res = JsonResponse({"erro": ""})
+                res.status_code = 200
+                return res
 
             except Exception as e:
                 print(e)
 
-                return JsonResponse({"erro": "Ocorreu um erro ao tentar atualizar o tópicos especificado"})
+                res = JsonResponse({"erro": "Ocorreu um erro ao tentar atualizar o tópicos especificado"})
+                res.status_code = 500
+                return res
 
         except Exception as e:
             print(e)
-            
-            return JsonResponse({"erro": "Usuário inválido"})
+
+            res = JsonResponse({"erro": "Usuário inválido"})
+            res.status_code = 401
+            return res
 
     else:
-        return JsonResponse({"erro": "Método de request inválido"})
+        res = JsonResponse({"erro": "Método de request inválido"})
+        res.status_code = 405
+        return res

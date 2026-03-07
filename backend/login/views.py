@@ -26,18 +26,28 @@ def login(request):
                 id = banco.id
 
                 if (check_password(senha, banco.senha)):
-                    return JsonResponse({"valor": id})
+                    res = JsonResponse({"valor": id})
+                    res.status_code = 200
+                    return res
                 
                 else:
-                    return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
+                    res = JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
+                    res.status_code = 404
+                    return res
 
             except Exception as e:
                 print(e)
-                return JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
+                res = JsonResponse({"valor": "", "erro": "Email ou senha incorretos"})
+                res.status_code = 404
+                return res
 
         else:
-            return JsonResponse({"valor": "", "erro": "a requisção foi usado um metódo que não e aceito"})
+            res = JsonResponse({"valor": "", "erro": "a requisção foi usado um metódo que não e aceito"})
+            res.status_code = 405
+            return res
 
     except Exception as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperados"})
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperados"})
+        res.status_code = 404
+        return res

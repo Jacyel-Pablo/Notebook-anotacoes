@@ -16,11 +16,16 @@ load_dotenv()
 def csrf_token(request):
     try:
         token = get_token(request)
-        return JsonResponse({"valor": token})
+
+        resp = JsonResponse({"valor": token})
+        resp.status_code = 200
+        return resp
 
     except Exception as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro ao enviar o token"})
+        resp = JsonResponse({"valor": "", "erro": "Ocorreu um erro ao enviar o token"})
+        resp.status_code = 404
+        return resp
     
 def jwt(request):
     try:
@@ -29,11 +34,15 @@ def jwt(request):
 
         token = encode(expiracao, os.getenv("JWT_KEY"))
 
-        return JsonResponse({"valor": token})
+        res = JsonResponse({"valor": token})
+        res.status_code = 200
+        return res
 
     except Exception as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro no sistema"})
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro no sistema"})
+        res.status_code = 404
+        return res
     
 @csrf_exempt
 def validar_jwt(request):
@@ -51,7 +60,3 @@ def validar_jwt(request):
     except Exception as e:
         print(e)
         return JsonResponse(False, safe=False)
-
-    except Exception as e:
-        print(e)
-        return JsonResponse({"valor": "", "erro": "usuário inválido"})

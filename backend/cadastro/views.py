@@ -24,7 +24,9 @@ def criar_conta(request):
 
             # Verificar tamanho do email e a senha
             if (len(nome) < 5 or len(senha) < 5):
-                return JsonResponse({"valor": "", "erro": "Email e senha precisam ter no minimo 5 caracteres"})
+                res = JsonResponse({"valor": "", "erro": "Email e senha precisam ter no minimo 5 caracteres"})
+                res.status_code = 500
+                return 
 
             # Veificando se a senha e a confirmação da mesma são iguais
             if (senha == confirmacao):
@@ -35,7 +37,10 @@ def criar_conta(request):
                 try:
                     notebook_usuario.objects.get(nome=nome)
 
-                    return JsonResponse({"valor": "", "erro": "Já existe um usuário cadastrado com esse email"})
+                    res = JsonResponse({"valor": "", "erro": "Já existe um usuário cadastrado com esse email"})
+                    res.status_code = 500
+
+                    return res
 
                 except:
                     # Criptografando a senha
@@ -45,17 +50,28 @@ def criar_conta(request):
 
                     # enviar_email(dados['email'])
 
-                    return JsonResponse({"valor": nome})
+                    res = JsonResponse({"valor": nome})
+                    res.status_code = 201
+
+                    return res
             
             else:
-                return JsonResponse({"valor": "", "erro": "As senhas são diferentes"})
+                res = JsonResponse({"valor": "", "erro": "As senhas são diferentes"})
+                res.status_code = 500
+
+                return res
 
         else:
-            return JsonResponse({"valor": "", "erro": "Ocorreu um erro metodo de pegar incorreto"})
+            res = JsonResponse({"valor": "", "erro": "Ocorreu um erro metodo de pegar incorreto"})
+            res.status_code = 500
+            return res
 
     except Exception as e:
         print(e)
-        return JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado"})
+
+        res = JsonResponse({"valor": "", "erro": "Ocorreu um erro inesperado"})
+        res.status_code = 500
+        return res
     
 def apagar_usuario(request):
     if request.method == "DELETE":
@@ -73,16 +89,31 @@ def apagar_usuario(request):
 
                     notebook_topicos.objects.filter(id_usuario=usuario_id)
 
-                    return JsonResponse({"erro": ""})
+                    res = JsonResponse({"valor": ""})
+                    res.status_code = 201
+
+                    return res
 
                 except:
-                    return JsonResponse({"erro", "Ocorreu um erro a o tentar apagar um usuário"})
+                    res = JsonResponse({"valor": "", "erro": "Usuário inválido"})
+                    res.status_code = 500
+
+                    return res
 
             except:
-                return JsonResponse({"erro", "Usuário inválido"})
+                res = JsonResponse({"valor": "", "erro": "Usuário inválido"})
+                res.status_code = 500
+
+                return res
 
         except:
-            return JsonResponse({"erro", "JWT inválido tenter fazer login novamente"})
+            res = JsonResponse({"valor": "", "erro": "JWT inválido tentar fazer login novamente"})
+            res.status_code = 500
+
+            return res
 
     else:
-        return JsonResponse({"erro", "Método utilizado está incorreto"})
+        res = JsonResponse({"valor": "", "erro": "Método utilizado está incorreto"})
+        res.status_code = 500
+        
+        return res

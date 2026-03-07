@@ -25,16 +25,19 @@ export default function Criar_conta(props: any)
 
         } else {
             if (dados.senha === dados.confirma) {
-                await fetch(`${backend}/cadastro/criar_conta/`, {
+                const criar_conta_response = fetch(`${backend}/cadastro/criar_conta/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(dados)
+                })
 
-                }).then(res => res.json()).then(res => {
-                    if (res["valor"].length <= 0) {
-                        alert(res["erro"])
+                criar_conta_response.then(async res => {
+                    const res_json = await res.json()
+
+                    if (res.status !== 201) {
+                        alert(res_json["erro"])
 
                     } else {
                         alert("Usuário criado com sucesso")
