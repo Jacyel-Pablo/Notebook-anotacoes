@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
+from django_ratelimit.decorators import ratelimit
 from .models import notebook_usuario
 from chatbot_ia.models import notebook_mensagens_ia
 from topicos.models import notebook_topicos
@@ -14,6 +15,7 @@ import json
 load_dotenv()
 
 @csrf_exempt
+@ratelimit(key='ip', rate='1/m', block=True)
 def criar_conta(request):
     try:
         if request.method == "POST":
@@ -73,6 +75,7 @@ def criar_conta(request):
         res.status_code = 500
         return res
     
+@ratelimit(key='ip', rate='1/m', block=True)
 def apagar_usuario(request):
     if request.method == "DELETE":
         try:

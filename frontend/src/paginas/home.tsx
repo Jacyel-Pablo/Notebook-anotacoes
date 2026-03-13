@@ -54,6 +54,18 @@ export default function Home(props: any) {
         location.href = "/"
     }
 
+    // Função que vai verificar se o usuário está dentro do limite de request
+    function verificar_rate_limit(csrf_token: string | undefined, status_code: number, ): void {
+        // Verificando se o usuário está dentro do rate limit
+        if (!csrf_token && status_code == 403) {
+            alert("Um dos seus dados de acesso está incorreto e necessario refazer o login")
+            sair_usuario()
+
+        } else if (status_code == 403) {
+            alert("Limite de requisição atingida tenter novamente mas tarde")
+        }
+    }
+
     async function enviar_anotacao(quem_esta_enviando: string, anotacao_ia: string) {
         const csrf_token = await cookieStore.get("csrftoken")
         const token_jwt = await cookieStore.get("jwt")
@@ -61,7 +73,7 @@ export default function Home(props: any) {
         if (quem_esta_enviando === "humano") {
             if (dados.anotacao.length >= 10) {
 
-                const enviar_anotacao_response = fetch(`${backend}/anotacao/enviar_anotacao/`, {
+                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -74,9 +86,10 @@ export default function Home(props: any) {
                         anotacao: dados.anotacao,
                     })
 
-                })
-                
-                enviar_anotacao_response.then(async res => {
+                }).then(async res => {
+
+                    // Verificando se o usuário está dentro do rate limit
+                    verificar_rate_limit(csrf_token?.value, res.status)
 
                     const res_json = await res.json()
 
@@ -109,7 +122,7 @@ export default function Home(props: any) {
 
         } else {
             if (anotacao_ia.length >= 10) {
-                const enviar_anotacao_response = fetch(`${backend}/anotacao/enviar_anotacao/`, {
+                await fetch(`${backend}/anotacao/enviar_anotacao/`, {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -122,9 +135,10 @@ export default function Home(props: any) {
                         anotacao: anotacao_ia
                     })
 
-                })
+                }).then(async res => {
 
-                enviar_anotacao_response.then(async res => {
+                    // Verificando se o usuário está dentro do rate limit
+                    verificar_rate_limit(csrf_token?.value, res.status)
 
                     const res_json = await res.json()
 
@@ -209,7 +223,7 @@ export default function Home(props: any) {
         const token_jwt = await cookieStore.get("jwt")
 
         if (deletar_user_ia) {
-            const apagar_usuario_response = fetch(`${backend}/cadastro/apagar_usuario/`, {
+            await fetch(`${backend}/cadastro/apagar_usuario/`, {
                 method: "DELETE",
                 headers: {
                     "X-CSRFToken": csrf_token?.value ?? "",
@@ -217,9 +231,10 @@ export default function Home(props: any) {
                 },
                 credentials: "include",
 
-            })
+            }).then(async res => {
 
-            apagar_usuario_response.then(async res => {
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
 
                 const res_json = await res.json()
 
@@ -249,6 +264,9 @@ export default function Home(props: any) {
                     })
 
                 }).then(async res => {
+
+                    // Verificando se o usuário está dentro do rate limit
+                    verificar_rate_limit(csrf_token?.value, res.status)
 
                     const res_json = await res.json()
 
@@ -288,7 +306,7 @@ export default function Home(props: any) {
                 // Se for para apagar o usuário entrar aqui
             } else if (abreFecharJanela.apagar_o_que === "apagar_usuário") {
 
-                const apagar_usuario_response = fetch(`${backend}/cadastro/apagar_usuario/`, {
+                await fetch(`${backend}/cadastro/apagar_usuario/`, {
                     method: "DELETE",
                     headers: {
                         "X-CSRFToken": csrf_token?.value ?? "",
@@ -296,9 +314,10 @@ export default function Home(props: any) {
                     },
                     credentials: "include",
 
-                })
+                }).then(async res => {
 
-                apagar_usuario_response.then(async res => {
+                    // Verificando se o usuário está dentro do rate limit
+                    verificar_rate_limit(csrf_token?.value, res.status)
 
                     const res_json = await res.json()
 
@@ -324,6 +343,10 @@ export default function Home(props: any) {
                     credentials: "include"
 
                 }).then(async res => {
+
+                    // Verificando se o usuário está dentro do rate limit
+                    verificar_rate_limit(csrf_token?.value, res.status)
+
                     const res_json = await res.json()
 
                     if (res.status === 200) {
@@ -375,6 +398,10 @@ export default function Home(props: any) {
             body: JSON.stringify({ "lista_msg": listaMensagensIa, "msg": userMensagem.mensagem })
 
         }).then(async res => {
+
+            // Verificando se o usuário está dentro do rate limit
+            verificar_rate_limit(csrf_token?.value, res.status)
+
             const res_json = await res.json()
 
             if (res.status === 200) {
@@ -469,6 +496,9 @@ export default function Home(props: any) {
 
             }).then(async res => {
 
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 201) {
@@ -503,6 +533,9 @@ export default function Home(props: any) {
                 })
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
 
                 const res_json = await res.json()
 
@@ -578,6 +611,10 @@ export default function Home(props: any) {
                 })
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 200) {
@@ -616,6 +653,10 @@ export default function Home(props: any) {
                 }
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 200) {
@@ -634,6 +675,10 @@ export default function Home(props: any) {
                         credentials: "include"
 
                     }).then(async res => {
+
+                        // Verificando se o usuário está dentro do rate limit
+                        verificar_rate_limit(csrf_token?.value, res.status)
+
                         const res_json = await res.json()
 
                         if (res.status === 200) {
@@ -664,6 +709,10 @@ export default function Home(props: any) {
                 credentials: "include",
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 200) {
@@ -708,6 +757,10 @@ export default function Home(props: any) {
             })
 
         }).then(async res => {
+
+            // Verificando se o usuário está dentro do rate limit
+            verificar_rate_limit(csrf_token?.value, res.status)
+
             const res_json = await res.json()
 
             if (res.status === 200) {
@@ -756,6 +809,10 @@ export default function Home(props: any) {
                 }
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 200) {
@@ -774,6 +831,10 @@ export default function Home(props: any) {
                         credentials: "include"
 
                     }).then(async res => {
+
+                        // Verificando se o usuário está dentro do rate limit
+                        verificar_rate_limit(csrf_token?.value, res.status)
+
                         const res_json = await res.json()
 
                         if (res.status === 200) {
@@ -804,6 +865,10 @@ export default function Home(props: any) {
                 }
 
             }).then(async res => {
+
+                // Verificando se o usuário está dentro do rate limit
+                verificar_rate_limit(csrf_token?.value, res.status)
+
                 const res_json = await res.json()
 
                 if (res.status === 200) {

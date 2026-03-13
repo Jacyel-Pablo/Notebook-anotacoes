@@ -2,7 +2,7 @@ POST http://localhost:8000/cadastro/criar_conta/
 Content-Type: application/json
 
 {
-    "email": "teste@gmail.com",
+    "nome": "teste12@gmail.com",
     "senha": "12345",
     "confirma": "12345"
 }

@@ -19,22 +19,40 @@ export default function Index(props:any)
         })
     }
 
-    function enviar_dados()
+    // Função que vai verificar se o usuário está dentro do limite de request
+    function verificar_rate_limit(csrf_token: string | undefined, status_code: number, ): void {
+        // Verificando se o usuário está dentro do rate limit
+        if (!csrf_token && status_code == 403) {
+            alert("Um dos seus dados de acesso está incorreto")
+
+        } else if (status_code == 403) {
+            alert("Limite de requisição atingida tenter novamente mas tarde")
+        }
+    }
+
+    async function enviar_dados()
     {
         // Metódo para validar se email e senha do usuário são validos
-        const response = fetch(`${backend}/login/login/`, {
+        await fetch(`${backend}/login/login/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(dados)
-        })
 
-        const csrf_token_res = fetch(`${backend}/tokens/csrf_token/`, {credentials: "include"})
+        }).then(async res => {
+            
+            // Verificar se o rate limit foi atingido
+            verificar_rate_limit("valido", res.status)
 
-        response.then(async res => {
             if (res.status === 200) {
-                csrf_token_res.then(async res1 => {
+                await fetch(`${backend}/tokens/csrf_token/`, {
+                    credentials: "include"
+
+                }).then(async res1 => {
+
+                    // Verificar se o rate limit foi atingido
+                    verificar_rate_limit("valido", res.status)
 
                     const response_ = await res1.json()
 
@@ -44,16 +62,17 @@ export default function Index(props:any)
                         let id = await res.json()
                         id = id["valor"] 
 
-                        const jwt_response = fetch(`${backend}/tokens/jwt/?id=${id}`, {
+                        await fetch(`${backend}/tokens/jwt/?id=${id}`, {
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRFToken": csrf_token ?? "",
                             },
                             credentials: "include"
 
-                        })
+                        }).then(async jwt => {
 
-                        jwt_response.then(async jwt => {
+                            // Verificar se o rate limit foi atingido
+                            verificar_rate_limit(csrf_token ?? "", res.status)
                             
                             const json_jwt = await jwt.json() 
 

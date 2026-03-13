@@ -19,21 +19,36 @@ const protecao_list: Protecao_list = {
   "/home": <Home backend={backend}/>
 }
 
+function sair_usuario(): void {
+  cookieStore.delete("csrftoken")
+  cookieStore.delete("jwt")
+  location.href = "/"
+}
+
 function Protecao()
 {
   const [ pag, setPag ] = useState(<div className='h-[100dvh] w-[100dvw] bg-amber-100'><h1>Carregando...</h1></div>)
 
-  async function teste() {
+  async function protegendo_telas() {
     const jwt = await cookieStore.get("jwt")
     
     if (jwt?.value != undefined) {
-      const validar_jwt = fetch(`${backend}/tokens/validar_jwt/`, {
+      await fetch(`${backend}/tokens/validar_jwt/`, {
         headers: {
           "Authorization": `Bearer ${jwt?.value}`
         }
-      })
 
-      validar_jwt.then(async res => {
+      }).then(async res => {
+
+        if (!jwt?.value && res.status === 403) {
+          alert("Token de usuário inválido")
+          sair_usuario()
+
+        } else if (res.status === 403) {
+          alert("Limite de requisição atingida tenter novamente mas tarde")
+          sair_usuario()
+        }
+
         const validar_jwt_res = await res.json()
         
         if (res.status === 200) {
@@ -62,7 +77,7 @@ function Protecao()
     }
   }
 
-  teste()
+  protegendo_telas()
 
   return pag
 }

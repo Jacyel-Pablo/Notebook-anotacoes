@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django_ratelimit.decorators import ratelimit
 from cadastro.models import notebook_usuario
 from .models import notebook_mensagens_ia
 from cryptography.fernet import Fernet
@@ -20,6 +21,7 @@ client = OpenAI(
   api_key=os.getenv("KEY_IA")
 )
 
+@ratelimit(key='ip', rate='7/m', block=True)
 def ia(request):
     if request.method != "POST":
         return JsonResponse({"erro": "Método inválido"})
@@ -234,6 +236,7 @@ def ia(request):
 
         return res
     
+@ratelimit(key='ip', rate='4/m', block=True)
 def pegar_chats_antigo(request):
     if (request.method == "GET"):
         jwt_token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
@@ -283,6 +286,7 @@ def pegar_chats_antigo(request):
         res.status_code = 405
         return res
     
+@ratelimit(key='ip', rate='3/m', block=True)
 def limpar_historico_chat(request):
     if (request.method == "DELETE"):
         jwt_token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django_ratelimit.decorators import ratelimit
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 from .models import notebook_anotacoes
@@ -16,6 +17,7 @@ f = Fernet(os.getenv("ANOTACAOES_KEY"))
 
 # Create your views here.
 
+@ratelimit(key='ip', rate='15/m', block=True)
 def enviar_anotacao(request):
     try:
         dados = json.loads(request.body)
@@ -110,6 +112,7 @@ def enviar_anotacao(request):
 
         return res
 
+@ratelimit(key='ip', rate='10/m', block=True)
 def pegar_anotacao(request):
     try:
         token_jwt = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
@@ -155,6 +158,7 @@ def pegar_anotacao(request):
         res.status_code = 401
         return res
 
+@ratelimit(key='ip', rate='10/m', block=True)
 def pegar_topico_anotacao(request):
     if request.method == "GET":
         try:
@@ -202,6 +206,7 @@ def pegar_topico_anotacao(request):
         res.status_code = 405
         return res
 
+@ratelimit(key='ip', rate='10/m', block=True)
 def apagar_anotacao(request):
     try:
         dados = json.loads(request.body)

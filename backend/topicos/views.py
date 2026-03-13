@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django_ratelimit.decorators import ratelimit
 from cryptography.fernet import Fernet
 from anotacao.models import notebook_anotacoes
 from cadastro.models import notebook_usuario
@@ -12,6 +13,7 @@ import jwt
 
 f = Fernet(os.getenv("ANOTACAOES_KEY"))
 
+@ratelimit(key='ip', rate='8/m', block=True)
 def criarTopico(request):
     if request.method == "POST":
         try:
@@ -77,6 +79,7 @@ def criarTopico(request):
 
         return res
     
+@ratelimit(key='ip', rate='10/m', block=True)
 def pegarTopicos(request):
     if request.method == "GET":
         try:
@@ -114,6 +117,7 @@ def pegarTopicos(request):
         res.status_code = 405
         return 
     
+@ratelimit(key='ip', rate='10/m', block=True)
 def apagarTopico(request):
     if request.method == "DELETE":
         try:
@@ -156,6 +160,7 @@ def apagarTopico(request):
         res.status_code = 405
         return 
     
+@ratelimit(key='ip', rate='5/m', block=True)
 def atualizarTopico(request):
     if request.method == "PATCH":
         try:

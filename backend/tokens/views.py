@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from django_ratelimit.decorators import ratelimit
 from jwt import encode, decode, ExpiredSignatureError
 import datetime
 from datetime import timedelta, timezone
@@ -13,6 +14,7 @@ load_dotenv()
 
 # Create your views here.
 
+@ratelimit(key='ip', rate='3/m', block=True)
 def csrf_token(request):
     try:
         token = get_token(request)
@@ -27,6 +29,7 @@ def csrf_token(request):
         resp.status_code = 404
         return resp
     
+@ratelimit(key='ip', rate='3/m', block=True)
 def jwt(request):
     try:
         id = request.GET['id']
@@ -45,6 +48,7 @@ def jwt(request):
         return res
     
 @csrf_exempt
+@ratelimit(key='ip', rate='10/m', block=True)
 def validar_jwt(request):
     try:
         token = request.META.get("HTTP_AUTHORIZATION").split(" ")[1]
