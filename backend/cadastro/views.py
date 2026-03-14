@@ -75,7 +75,7 @@ def criar_conta(request):
         res.status_code = 500
         return res
     
-@ratelimit(key='ip', rate='1/m', block=True)
+@ratelimit(key='ip', rate='10/m', block=True)
 def apagar_usuario(request):
     if request.method == "DELETE":
         try:

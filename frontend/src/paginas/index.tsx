@@ -50,9 +50,9 @@ export default function Index(props:any)
                     credentials: "include"
 
                 }).then(async res1 => {
-
+                    
                     // Verificar se o rate limit foi atingido
-                    verificar_rate_limit("valido", res.status)
+                    verificar_rate_limit("valido", res1.status)
 
                     const response_ = await res1.json()
 
@@ -72,7 +72,7 @@ export default function Index(props:any)
                         }).then(async jwt => {
 
                             // Verificar se o rate limit foi atingido
-                            verificar_rate_limit(csrf_token ?? "", res.status)
+                            verificar_rate_limit("valido", jwt.status)
                             
                             const json_jwt = await jwt.json() 
 

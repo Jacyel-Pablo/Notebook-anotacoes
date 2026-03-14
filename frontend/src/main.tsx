@@ -40,7 +40,7 @@ function Protecao()
 
       }).then(async res => {
 
-        if (!jwt?.value && res.status === 403) {
+        if (!jwt?.value && res.status === 500) {
           alert("Token de usuário inválido")
           sair_usuario()
 

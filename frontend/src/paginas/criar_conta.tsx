@@ -25,15 +25,19 @@ export default function Criar_conta(props: any)
 
         } else {
             if (dados.senha === dados.confirma) {
-                const criar_conta_response = fetch(`${backend}/cadastro/criar_conta/`, {
+                await fetch(`${backend}/cadastro/criar_conta/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(dados)
-                })
 
-                criar_conta_response.then(async res => {
+                }).then(async res => {
+
+                    if (res.status == 403) {
+                        alert("Limite de requisição atingida tenter novamente mas tarde")
+                    }
+
                     const res_json = await res.json()
 
                     if (res.status !== 201) {

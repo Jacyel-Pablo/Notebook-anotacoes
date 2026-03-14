@@ -55,10 +55,14 @@ export default function Home(props: any) {
     }
 
     // Função que vai verificar se o usuário está dentro do limite de request
-    function verificar_rate_limit(csrf_token: string | undefined, status_code: number, ): void {
+    function verificar_rate_limit(csrf_token: string | undefined, jwt: string | undefined, status_code: number, ): void {
         // Verificando se o usuário está dentro do rate limit
         if (!csrf_token && status_code == 403) {
             alert("Um dos seus dados de acesso está incorreto e necessario refazer o login")
+            sair_usuario()
+
+        } else if (!jwt && status_code == 500) {
+            alert("Token de sessão não encontrado")
             sair_usuario()
 
         } else if (status_code == 403) {
@@ -89,7 +93,7 @@ export default function Home(props: any) {
                 }).then(async res => {
 
                     // Verificando se o usuário está dentro do rate limit
-                    verificar_rate_limit(csrf_token?.value, res.status)
+                    verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                     const res_json = await res.json()
 
@@ -138,7 +142,7 @@ export default function Home(props: any) {
                 }).then(async res => {
 
                     // Verificando se o usuário está dentro do rate limit
-                    verificar_rate_limit(csrf_token?.value, res.status)
+                    verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                     const res_json = await res.json()
 
@@ -234,7 +238,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                 const res_json = await res.json()
 
@@ -266,7 +270,7 @@ export default function Home(props: any) {
                 }).then(async res => {
 
                     // Verificando se o usuário está dentro do rate limit
-                    verificar_rate_limit(csrf_token?.value, res.status)
+                    verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                     const res_json = await res.json()
 
@@ -317,7 +321,7 @@ export default function Home(props: any) {
                 }).then(async res => {
 
                     // Verificando se o usuário está dentro do rate limit
-                    verificar_rate_limit(csrf_token?.value, res.status)
+                    verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                     const res_json = await res.json()
 
@@ -345,7 +349,7 @@ export default function Home(props: any) {
                 }).then(async res => {
 
                     // Verificando se o usuário está dentro do rate limit
-                    verificar_rate_limit(csrf_token?.value, res.status)
+                    verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                     const res_json = await res.json()
 
@@ -379,6 +383,7 @@ export default function Home(props: any) {
         carregando: false
     })
 
+    // Pegar o retorno da mensagem que a IA escreveu
     async function pegar_mensagem_ia() {
         const token_jwt = await cookieStore.get("jwt")
         const csrf_token = await cookieStore.get("csrftoken")
@@ -400,7 +405,7 @@ export default function Home(props: any) {
         }).then(async res => {
 
             // Verificando se o usuário está dentro do rate limit
-            verificar_rate_limit(csrf_token?.value, res.status)
+            verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
             const res_json = await res.json()
 
@@ -497,7 +502,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                 const res_json = await res.json()
 
@@ -535,7 +540,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                 const res_json = await res.json()
 
@@ -613,7 +618,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                 const res_json = await res.json()
 
@@ -655,7 +660,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value , res.status)
 
                 const res_json = await res.json()
 
@@ -677,7 +682,7 @@ export default function Home(props: any) {
                     }).then(async res => {
 
                         // Verificando se o usuário está dentro do rate limit
-                        verificar_rate_limit(csrf_token?.value, res.status)
+                        verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
                         const res_json = await res.json()
 
@@ -711,7 +716,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
                 const res_json = await res.json()
 
@@ -759,7 +764,7 @@ export default function Home(props: any) {
         }).then(async res => {
 
             // Verificando se o usuário está dentro do rate limit
-            verificar_rate_limit(csrf_token?.value, res.status)
+            verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
             const res_json = await res.json()
 
@@ -811,7 +816,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
                 const res_json = await res.json()
 
@@ -833,7 +838,7 @@ export default function Home(props: any) {
                     }).then(async res => {
 
                         // Verificando se o usuário está dentro do rate limit
-                        verificar_rate_limit(csrf_token?.value, res.status)
+                        verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
                         const res_json = await res.json()
 
@@ -867,7 +872,7 @@ export default function Home(props: any) {
             }).then(async res => {
 
                 // Verificando se o usuário está dentro do rate limit
-                verificar_rate_limit(csrf_token?.value, res.status)
+                verificar_rate_limit(csrf_token?.value, token_jwt?.value, res.status)
 
                 const res_json = await res.json()
 
