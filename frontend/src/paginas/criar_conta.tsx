@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Alerta from "./alerta"
 
 export default function Criar_conta(props: any)
 {
@@ -18,10 +19,27 @@ export default function Criar_conta(props: any)
         })
     }
 
+    interface Erro {
+        mensagemErro: string,
+        porcentagem: string
+    }
+
+    const [ erro, setErro ] = useState<Erro>({
+        mensagemErro: "",
+        porcentagem: "0"
+    })
+
+    function passaErro(mensagemErro: string, porcentagem: string) {
+        setErro({
+            mensagemErro: mensagemErro,
+            porcentagem: porcentagem
+        })
+    }
+
     async function enviar_dados()
     {
         if (dados.nome.length < 5 || dados.senha.length < 5) {
-            alert("Email e senha precisam ter no minimo 5 caracteres")
+            passaErro("Email e senha precisam ter no minimo 5 caracteres", "100")
 
         } else {
             if (dados.senha === dados.confirma) {
@@ -35,16 +53,16 @@ export default function Criar_conta(props: any)
                 }).then(async res => {
 
                     if (res.status == 403) {
-                        alert("Limite de requisição atingida tenter novamente mas tarde")
+                        passaErro("Limite de requisição atingida tenter novamente mas tarde", "100")
                     }
 
                     const res_json = await res.json()
 
                     if (res.status !== 201) {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                     } else {
-                        alert("Usuário criado com sucesso")
+                        passaErro("Usuário criado com sucesso", "100")
                         // alert("Usuário criado com sucesso\nenviamos um email para ativar seu usuário\nverifique seu email se não estive aparecendo vai na sua caixa de spam")
 
                         location.href = "/"
@@ -52,13 +70,16 @@ export default function Criar_conta(props: any)
                 })
 
             } else {
-                alert("As senhas são diferentes")
+                passaErro("As senhas são diferentes", "100")
             }
         }
     }
 
     return (
         <div className="h-[100dvh] w-[100dvw] flex items-center justify-center bg-orange-100">
+
+            <Alerta mensagem={erro.mensagemErro} porcentagem={erro.porcentagem} passaErro={passaErro}></Alerta>
+
             <form className="h-[38%] xl:w-[40%] lg:w-100% w-[100%] rounded-4xl bg-[url(./assets/login.jpg)] bg-cover bg-no-repeat overflow-hidden">
                 <div className="w-[100%] grid grid-cols-3 text-end overflow-hidden lg:mt-7 mt-3 md:mt-32">
                     <p className="mr-5 text-3xl">Nome:</p>

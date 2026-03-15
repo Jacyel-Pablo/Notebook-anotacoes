@@ -1,5 +1,6 @@
 import { useState } from "react"
 import getCookie from "./pegar_cookies"
+import Alerta from "./alerta"
 
 export default function Index(props:any)
 {
@@ -23,11 +24,28 @@ export default function Index(props:any)
     function verificar_rate_limit(csrf_token: string | undefined, status_code: number, ): void {
         // Verificando se o usuário está dentro do rate limit
         if (!csrf_token && status_code == 403) {
-            alert("Um dos seus dados de acesso está incorreto")
+            passaErro("Um dos seus dados de acesso está incorreto", "100")
 
         } else if (status_code == 403) {
-            alert("Limite de requisição atingida tenter novamente mas tarde")
+            passaErro("Limite de requisição atingida tenter novamente mas tarde", "100")
         }
+    }
+
+    interface Erro {
+        mensagemErro: string,
+        porcentagem: string
+    }
+
+    const [ erro, setErro ] = useState<Erro>({
+        mensagemErro: "",
+        porcentagem: "0"
+    })
+
+    function passaErro(mensagemErro: string, porcentagem: string) {
+        setErro({
+            mensagemErro: mensagemErro,
+            porcentagem: porcentagem
+        })
     }
 
     async function enviar_dados()
@@ -82,19 +100,19 @@ export default function Index(props:any)
                                 location.href = "/home"
 
                             } else {
-                                alert(json_jwt["erro"])
+                                passaErro(json_jwt["erro"], "100")
                             }
                         })
 
                     } else {
-                        alert(response_["erro"])
+                        passaErro(response_["erro"], "100")
                     }
                 })
 
             } else {
                 const erro = await res.json()
 
-                alert(erro["erro"])
+                passaErro(erro["erro"], "100")
             }
         })
 
@@ -102,6 +120,10 @@ export default function Index(props:any)
 
     return (
         <div className="h-[100dvh] w-[100dvw] flex items-center justify-center bg-orange-100">
+            
+            {/* A porcentagem está aberto quando está em 100 e fechado quando está em 0 */}
+            <Alerta mensagem={erro.mensagemErro} porcentagem={erro.porcentagem} passaErro={passaErro}></Alerta>
+            
             <form className="h-[38%] xl:w-[40%] w-[100%] rounded-4xl bg-[url(./assets/login.jpg)] bg-cover bg-no-repeat overflow-hidden">
                 <div className="w-[100%] grid grid-cols-3 text-end overflow-hidden md:mt-28 lg:mt-7 md:mt-32 mt-5">
                     <p className="mr-5 text-3xl">Nome:</p>

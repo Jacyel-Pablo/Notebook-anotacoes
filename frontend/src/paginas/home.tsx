@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react"
 import icone_iamai from "../assets/Iamai.png"
+import Alerta from "./alerta"
 
 export default function Home(props: any) {
     const backend = props.backend
@@ -54,19 +55,35 @@ export default function Home(props: any) {
         location.href = "/"
     }
 
+    interface Erro {
+        mensagemErro: string,
+        porcentagem: string
+    }
+
+    const [ erro, setErro ] = useState<Erro>({
+        mensagemErro: "",
+        porcentagem: "0"
+    })
+
+    function passaErro(mensagemErro: string, porcentagem: string) {
+        setErro({
+            mensagemErro: mensagemErro,
+            porcentagem: porcentagem
+        })
+    }
+
     // Função que vai verificar se o usuário está dentro do limite de request
     function verificar_rate_limit(csrf_token: string | undefined, jwt: string | undefined, status_code: number, ): void {
         // Verificando se o usuário está dentro do rate limit
         if (!csrf_token && status_code == 403) {
-            alert("Um dos seus dados de acesso está incorreto e necessario refazer o login")
-            sair_usuario()
+            passaErro("Um dos seus dados de acesso está incorreto e necessario refazer o login", "100")
 
         } else if (!jwt && status_code == 500) {
-            alert("Token de sessão não encontrado")
-            sair_usuario()
+            passaErro("Token de sessão não encontrado", "100")
 
         } else if (status_code == 403) {
-            alert("Limite de requisição atingida tenter novamente mas tarde")
+            passaErro("Limite de requisição atingida tenter novamente mas tarde", "100")
+        
         }
     }
 
@@ -108,7 +125,7 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                         if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
@@ -117,7 +134,7 @@ export default function Home(props: any) {
                 })
 
             } else {
-                alert("Sua anotação precisa ter no minimo 10 caracteres")
+                passaErro("Sua anotação precisa ter no minimo 10 caracteres", "100")
                 setDados({
                     ...dados,
                     anotacao: "",
@@ -157,7 +174,7 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                         if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
@@ -166,7 +183,7 @@ export default function Home(props: any) {
                 })
 
             } else {
-                alert("Sua anotação precisa ter no minimo 10 caracteres")
+                passaErro("Sua anotação precisa ter no minimo 10 caracteres", "100")
                 setDados({
                     ...dados,
                     anotacao: "",
@@ -243,13 +260,13 @@ export default function Home(props: any) {
                 const res_json = await res.json()
 
                 if (res.status === 201) {
-                    alert("Usuário apagado com sucesso")
+                    passaErro("Usuário apagado com sucesso", "100")
                     await cookieStore.delete("jwt")
                     await cookieStore.delete("csrftoken")
                     location.href = "/"
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
             })
 
@@ -275,7 +292,7 @@ export default function Home(props: any) {
                     const res_json = await res.json()
 
                     if (res.status === 200) {
-                        alert("Mensagem apagadar com sucesso!")
+                        passaErro("Mensagem apagadar com sucesso!", "100")
 
                         // Div 1
                         anotacao_element.current!.children[0].className = ""
@@ -294,7 +311,7 @@ export default function Home(props: any) {
                         })
 
                     } else {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                         if (res_json["erro"] === "usuário inválido") {
                             sair_usuario()
@@ -326,13 +343,13 @@ export default function Home(props: any) {
                     const res_json = await res.json()
 
                     if (res.status === 201) {
-                        alert("Usuário apagado com sucesso")
+                        passaErro("Usuário apagado com sucesso", "100")
                         await cookieStore.delete("jwt")
                         await cookieStore.delete("csrftoken")
                         location.href = "/"
 
                     } else {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
                     }
                 })
 
@@ -354,12 +371,12 @@ export default function Home(props: any) {
                     const res_json = await res.json()
 
                     if (res.status === 200) {
-                        alert("Mensagens do chat apagador com sucesso")
+                        passaErro("Mensagens do chat apagador com sucesso", "100")
 
                         setListaMensagensIa([])
 
                     } else {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
                     }
                 })
             }
@@ -439,7 +456,7 @@ export default function Home(props: any) {
                 ])
 
             } else {
-                alert(res_json["erro"])
+                passaErro(res_json["erro"], "100")
             }
 
             setUserMensagem({
@@ -521,7 +538,7 @@ export default function Home(props: any) {
                     })
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
             })
 
@@ -559,7 +576,7 @@ export default function Home(props: any) {
                     })
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
             })
         }
@@ -639,7 +656,7 @@ export default function Home(props: any) {
                     e.target!.parentElement!.children[0].className = "h-0 w-0 text-[0%]"
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
             })
         }
@@ -690,13 +707,13 @@ export default function Home(props: any) {
                             setListaMensagensIa(res_json["valor"])
 
                         } else {
-                            alert(res_json["erro"])
+                            passaErro(res_json["erro"], "100")
                         }
                     })
 
                 } else {
                     if (res_json["erro"] != undefined) {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                         if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
@@ -727,7 +744,7 @@ export default function Home(props: any) {
                     })                
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
 
             })
@@ -781,10 +798,10 @@ export default function Home(props: any) {
                 setNomeTopicoAtual("Todos")
                 setAbrirMenuTopicos({abrir: false})
                 
-                alert("topico apagado com sucesso")
+                passaErro("topico apagado com sucesso", "100")
 
             } else {
-                alert(res_json["erro"])
+                passaErro(res_json["erro"], "100")
             }
 
         })
@@ -846,13 +863,13 @@ export default function Home(props: any) {
                             setListaMensagensIa(res_json["valor"])
 
                         } else {
-                            alert(res_json["erro"])
+                            passaErro(res_json["erro"], "100")
                         }
                     })
 
                 } else {
                     if (res_json["erro"] != undefined) {
-                        alert(res_json["erro"])
+                        passaErro(res_json["erro"], "100")
 
                         if (res_json["erro"] === "Ocorreu um erro o token de login e inválido" || res_json["erro"] === "usuário inválido") {
                             sair_usuario()
@@ -880,7 +897,7 @@ export default function Home(props: any) {
                     setListaTopicos(res_json["valor"])
 
                 } else {
-                    alert(res_json["erro"])
+                    passaErro(res_json["erro"], "100")
                 }
             })
         }
@@ -891,6 +908,8 @@ export default function Home(props: any) {
 
     return (
         <div className="h-[100dvh] flex bg-orange-100">
+
+            <Alerta mensagem={erro.mensagemErro} porcentagem={erro.porcentagem} passaErro={passaErro}></Alerta>
 
             {/* Tela de adicionar um novo topico */}
             <div className={`${criarTopico.abrir ? "h-[100dvh] w-[100dvw] z-30" : "h-[0dvh] w-[0dvw]"} fixed`}>
