@@ -25,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6j53!$2njpfnq&8bn@3hdj6jf4p2i&2#_+u8e58e5=04z82rtc'
+SECRET_KEY = os.getenv("SECRET_KEY_DJANGO")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [os.getenv("URL_FRONT").split("https://")[1], os.getenv("URL_BACK")]
 
 # Application definition
 
@@ -147,15 +147,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_ALLOWED_ORIGINS = [
-    "https://notebook-anotacoes.vercel.app",
-    # "http://localhost:5173",
+    os.getenv("URL_FRONT"),
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://notebook-anotacoes.vercel.app",
-    # "http://localhost:5173",
+    os.getenv("URL_FRONT"),
 ]
 
 CSRF_COOKIE_SECURE = True
