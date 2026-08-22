@@ -8,8 +8,7 @@ import Home from './paginas/home.tsx'
 import { useState } from 'react'
 import type { JSX } from 'react/jsx-dev-runtime'
 
-const backend = "https://notebook-anotacoes.onrender.com"
-// const backend = "http://127.0.0.1:8000"
+const backend = import.meta.env.VITE_URL_BACK
 
 interface Protecao_list {
   [key: string]: JSX.Element
