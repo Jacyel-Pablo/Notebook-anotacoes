@@ -30,7 +30,9 @@ SECRET_KEY = os.getenv("SECRET_KEY_DJANGO")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [os.getenv("URL_FRONT").split("https://")[1], os.getenv("URL_BACK")]
+URL_FRONT = os.getenv("URL_FRONT")
+
+ALLOWED_HOSTS = [str(URL_FRONT).replace("https://", "").replace("http://", "").rstrip("/"), os.getenv("URL_BACK")]
 
 # Application definition
 
@@ -147,13 +149,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 CORS_ALLOWED_ORIGINS = [
-    os.getenv("URL_FRONT"),
+    URL_FRONT,
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    os.getenv("URL_FRONT"),
+    URL_FRONT,
 ]
 
 CSRF_COOKIE_SECURE = True
