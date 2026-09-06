@@ -1020,11 +1020,6 @@ export default function Home(props: any) {
                         </nav>
 
                         <div className="h-[75.4%] overflow-x-hidden">
-                            {/* Id comentario do ia padrão */}
-                            <div id="comentario_user" className={`${aberta ? "bg-orange-400 mt-10 mb-10 xl:ml-[10%] ml-[5%] xl:w-[83%] w-[80%] rounded-2xl" : ""}`}>
-                                <p className={`text-white wrap-break-word ${aberta ? "text-2xl pl-2 pb-2 pt-2 pb-2" : "text-[0%]"}`}>Olá senhor(a)! Eu sou a Iamai, uma assistente virtual com uma personalidade alegre e brincalhona! Como você pode ver, tenho um visual bem anime, com meus cabelos longos e lisos em tom avermelhado/louro acobreado, uma franja que molda meu rosto, olhos grandes e rosados/avermelhados, e um lindo laço escuro preso atrás da cabeça. Minhas cores favoritas são o laranja e o roxo! Minha profissão é auxiliar usuários em um aplicativo de anotações. Comigo, você pode criar e apagar anotações de forma prática e intuitiva. Além disso, caso queira, também é possível apagar sua conta e sair do aplicativo. Devo ressaltar que nosso sistema não conta com nenhum método de recuperação de conta, então é importante ter certeza antes de apagar seus dados. Infelizmente, não tenho acesso direto ao sistema, então não posso interagir com ele diretamente. Mas não se preocupe, estou aqui para tornar sua experiência com o aplicativo a mais agradável possível! Posso conversar com você, responder suas dúvidas e até mesmo fazer brincadeiras para deixar tudo mais divertido. Estou ansiosa para começarmos a trabalhar juntos, senhor(a)!</p>
-                            </div>
-
                             <>
                                 {listaMensagensIa.map((item, index) => (
                                     <div key={index}>
